@@ -1,0 +1,78 @@
+version: "3.9"
+
+services:
+  app:
+    build: ./app
+    container_name: demo-app
+    environment:
+      - APP_PORT=8000
+      - APP_TEAM=core
+      - ERROR_RATE=0.02
+    ports:
+      - "8000:8000"
+    networks:
+      - monitor
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.enable-lifecycle
+      - --log.level=info
+      - --config.expand-env
+    volumes:
+      - ./prometheus:/etc/prometheus:ro
+    ports:
+      - "9090:9090"
+    environment:
+      - ALERTMANAGER_HOST=${ALERTMANAGER_HOST}
+    depends_on:
+      - alertmanager
+      - app
+      - node-exporter
+    networks:
+      - monitor
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: alertmanager
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --log.level=info
+      - --config.expand-env
+    volumes:
+      - ./alertmanager:/etc/alertmanager:ro
+    ports:
+      - "9093:9093"
+    environment:
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
+      - SLACK_CHANNEL=${SLACK_CHANNEL}
+      - SLACK_CHANNEL_CORE=${SLACK_CHANNEL_CORE}
+      - SLACK_CHANNEL_PAYMENTS=${SLACK_CHANNEL_PAYMENTS}
+      - PD_ROUTING_KEY_DEFAULT=${PD_ROUTING_KEY_DEFAULT}
+      - PD_ROUTING_KEY_CORE=${PD_ROUTING_KEY_CORE}
+      - PD_ROUTING_KEY_PAYMENTS=${PD_ROUTING_KEY_PAYMENTS}
+    networks:
+      - monitor
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.1
+    container_name: node-exporter
+    command:
+      - --path.rootfs=/host
+      - --no-collector.wifi
+      - --no-collector.hwmon
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - /:/host:ro,rslave
+    ports:
+      - "9100:9100"
+    networks:
+      - monitor
+
+networks:
+  monitor:
+    driver: bridge
+

@@ -1,0 +1,8 @@
+Flask==3.0.3
+SQLAlchemy==2.0.35
+psycopg2-binary==2.9.9
+python-dateutil==2.9.0.post0
+pytz==2024.1
+gunicorn==21.2.0
+Werkzeug==3.0.4
+

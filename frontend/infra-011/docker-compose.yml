@@ -1,0 +1,15 @@
+version: "3.8"
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+  app:
+    build: .
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - APP_NAMESPACE=demoapp
+      - DEFAULT_TTL_SECONDS=3600
+    depends_on:
+      - redis
+

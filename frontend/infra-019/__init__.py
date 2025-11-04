@@ -1,0 +1,2 @@
+"""frontend/infra-019"""
+__version__ = "1.0.0"

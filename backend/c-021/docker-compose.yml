@@ -1,0 +1,66 @@
+version: "3.9"
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    command: flask run --host=0.0.0.0 --port=5000
+    env_file: .env
+    volumes:
+      - .:/app
+    ports:
+      - "5000:5000"
+    depends_on:
+      - redis
+
+  celery-worker:
+    build: .
+    command: celery -A worker.celery_worker.celery worker --loglevel=info
+    env_file: .env
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+
+  celery-beat:
+    build: .
+    command: celery -A worker.celery_worker.celery beat --loglevel=info
+    env_file: .env
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+
+  flower:
+    build: .
+    command: celery -A worker.celery_worker.celery flower --port=5555 --url_prefix=/flower
+    env_file: .env
+    volumes:
+      - .:/app
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+      - celery-worker
+
+  rq-worker:
+    build: .
+    command: rq worker -u ${REDIS_URL} default
+    env_file: .env
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+
+  rqscheduler:
+    build: .
+    command: rqscheduler -u ${REDIS_URL}
+    env_file: .env
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+

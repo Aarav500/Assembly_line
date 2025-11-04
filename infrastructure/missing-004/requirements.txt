@@ -1,0 +1,9 @@
+flask==3.0.0
+celery==5.3.6
+redis==5.0.1
+SQLAlchemy==2.0.36
+sendgrid==6.11.0
+Jinja2==3.1.4
+boto3==1.35.58
+python-dotenv==1.0.1
+

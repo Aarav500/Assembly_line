@@ -1,0 +1,436 @@
+{
+  "batch_id": "20251015-054412-54a83f",
+  "total": 20,
+  "completed": 0,
+  "elapsed_sec": 527.0600011348724,
+  "ledger": {
+    "total_usd": 0.9125487499999999,
+    "gpt-5": {
+      "tokens_in": 1471,
+      "tokens_out": 91071,
+      "usd": 0.9125487499999999
+    }
+  },
+  "tasks": [
+    {
+      "id": "infra-004",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 72,
+        "out_toks": 861,
+        "usd": 0.0087,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 82,
+        "output_tokens": 19,
+        "cost": 0.000531,
+        "raw": "__LLM_ERROR__ Client.__init__() got an unexpected keyword argument 'proxies'"
+      },
+      "total_cost": 0.0087
+    },
+    {
+      "id": "infra-003",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 76,
+        "out_toks": 2808,
+        "usd": 0.028175000000000002,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 82,
+        "output_tokens": 19,
+        "cost": 0.000531,
+        "raw": "__LLM_ERROR__ Client.__init__() got an unexpected keyword argument 'proxies'"
+      },
+      "total_cost": 0.028175000000000002
+    },
+    {
+      "id": "infra-002",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 77,
+        "out_toks": 7547,
+        "usd": 0.07556625,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 3598,
+        "output_tokens": 19,
+        "cost": 0.011079,
+        "raw": "__LLM_ERROR__ Client.__init__() got an unexpected keyword argument 'proxies'"
+      },
+      "total_cost": 0.07556625
+    },
+    {
+      "id": "infra-001",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 77,
+        "out_toks": 7969,
+        "usd": 0.07978625000000002,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 82,
+        "output_tokens": 19,
+        "cost": 0.000531,
+        "raw": "__LLM_ERROR__ Client.__init__() got an unexpected keyword argument 'proxies'"
+      },
+      "total_cost": 0.07978625000000002
+    },
+    {
+      "id": "infra-005",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 74,
+        "out_toks": 1995,
+        "usd": 0.020042499999999998,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 82,
+        "output_tokens": 19,
+        "cost": 0.000531,
+        "raw": "__LLM_ERROR__ Client.__init__() got an unexpected keyword argument 'proxies'"
+      },
+      "total_cost": 0.020042499999999998
+    },
+    {
+      "id": "infra-009",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 73,
+        "out_toks": 1274,
+        "usd": 0.012831249999999999,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 82,
+        "output_tokens": 19,
+        "cost": 0.000531,
+        "raw": "__LLM_ERROR__ Client.__init__() got an unexpected keyword argument 'proxies'"
+      },
+      "total_cost": 0.012831249999999999
+    },
+    {
+      "id": "infra-007",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 67,
+        "out_toks": 2248,
+        "usd": 0.02256375,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 82,
+        "output_tokens": 19,
+        "cost": 0.000531,
+        "raw": "__LLM_ERROR__ Client.__init__() got an unexpected keyword argument 'proxies'"
+      },
+      "total_cost": 0.02256375
+    },
+    {
+      "id": "infra-008",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 72,
+        "out_toks": 2578,
+        "usd": 0.02587,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 82,
+        "output_tokens": 19,
+        "cost": 0.000531,
+        "raw": "__LLM_ERROR__ Client.__init__() got an unexpected keyword argument 'proxies'"
+      },
+      "total_cost": 0.02587
+    },
+    {
+      "id": "infra-010",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 69,
+        "out_toks": 1326,
+        "usd": 0.013346249999999999,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 82,
+        "output_tokens": 19,
+        "cost": 0.000531,
+        "raw": "__LLM_ERROR__ Client.__init__() got an unexpected keyword argument 'proxies'"
+      },
+      "total_cost": 0.013346249999999999
+    },
+    {
+      "id": "infra-011",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 69,
+        "out_toks": 4713,
+        "usd": 0.04721625000000001,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 3906,
+        "output_tokens": 19,
+        "cost": 0.012003000000000002,
+        "raw": "__LLM_ERROR__ Client.__init__() got an unexpected keyword argument 'proxies'"
+      },
+      "total_cost": 0.04721625000000001
+    },
+    {
+      "id": "infra-012",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 72,
+        "out_toks": 3172,
+        "usd": 0.03181,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 2252,
+        "output_tokens": 19,
+        "cost": 0.0070409999999999995,
+        "raw": "__LLM_ERROR__ Client.__init__() got an unexpected keyword argument 'proxies'"
+      },
+      "total_cost": 0.03181
+    },
+    {
+      "id": "infra-013",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 73,
+        "out_toks": 4017,
+        "usd": 0.04026125,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 3517,
+        "output_tokens": 19,
+        "cost": 0.010836,
+        "raw": "__LLM_ERROR__ Client.__init__() got an unexpected keyword argument 'proxies'"
+      },
+      "total_cost": 0.04026125
+    },
+    {
+      "id": "infra-014",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 76,
+        "out_toks": 4897,
+        "usd": 0.049065,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 3129,
+        "output_tokens": 19,
+        "cost": 0.009672,
+        "raw": "__LLM_ERROR__ Client.__init__() got an unexpected keyword argument 'proxies'"
+      },
+      "total_cost": 0.049065
+    },
+    {
+      "id": "infra-006",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 74,
+        "out_toks": 7132,
+        "usd": 0.0714125,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 82,
+        "output_tokens": 19,
+        "cost": 0.000531,
+        "raw": "__LLM_ERROR__ Client.__init__() got an unexpected keyword argument 'proxies'"
+      },
+      "total_cost": 0.0714125
+    },
+    {
+      "id": "infra-017",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 78,
+        "out_toks": 5274,
+        "usd": 0.0528375,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 3402,
+        "output_tokens": 19,
+        "cost": 0.010491,
+        "raw": "__LLM_ERROR__ Client.__init__() got an unexpected keyword argument 'proxies'"
+      },
+      "total_cost": 0.0528375
+    },
+    {
+      "id": "infra-018",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 76,
+        "out_toks": 6524,
+        "usd": 0.065335,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 3031,
+        "output_tokens": 19,
+        "cost": 0.009378000000000001,
+        "raw": "__LLM_ERROR__ Client.__init__() got an unexpected keyword argument 'proxies'"
+      },
+      "total_cost": 0.065335
+    },
+    {
+      "id": "infra-015",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 75,
+        "out_toks": 5585,
+        "usd": 0.055943749999999993,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 3234,
+        "output_tokens": 19,
+        "cost": 0.009987000000000001,
+        "raw": "__LLM_ERROR__ Client.__init__() got an unexpected keyword argument 'proxies'"
+      },
+      "total_cost": 0.055943749999999993
+    },
+    {
+      "id": "infra-016",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 73,
+        "out_toks": 6302,
+        "usd": 0.06311125000000001,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 5544,
+        "output_tokens": 19,
+        "cost": 0.016917,
+        "raw": "__LLM_ERROR__ Client.__init__() got an unexpected keyword argument 'proxies'"
+      },
+      "total_cost": 0.06311125000000001
+    },
+    {
+      "id": "infra-020",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 75,
+        "out_toks": 5070,
+        "usd": 0.05079374999999999,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 1925,
+        "output_tokens": 19,
+        "cost": 0.006059999999999999,
+        "raw": "__LLM_ERROR__ Client.__init__() got an unexpected keyword argument 'proxies'"
+      },
+      "total_cost": 0.05079374999999999
+    },
+    {
+      "id": "infra-019",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 73,
+        "out_toks": 9779,
+        "usd": 0.09788124999999999,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 5528,
+        "output_tokens": 19,
+        "cost": 0.016869000000000002,
+        "raw": "__LLM_ERROR__ Client.__init__() got an unexpected keyword argument 'proxies'"
+      },
+      "total_cost": 0.09788124999999999
+    }
+  ]
+}

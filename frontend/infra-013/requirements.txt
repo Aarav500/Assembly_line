@@ -1,0 +1,8 @@
+Flask>=2.3.3
+hashlib
+processor
+retry
+config
+atexit
+utils
+uuid

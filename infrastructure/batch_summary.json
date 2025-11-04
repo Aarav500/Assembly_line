@@ -1,0 +1,331 @@
+{
+  "batch_id": "20251016-003617-a30d91",
+  "total": 15,
+  "completed": 0,
+  "elapsed_sec": 611.1848459243774,
+  "ledger": {
+    "total_usd": 0.9593112500000001,
+    "gpt-5": {
+      "tokens_in": 1241,
+      "tokens_out": 95776,
+      "usd": 0.9593112500000001
+    }
+  },
+  "tasks": [
+    {
+      "id": "missing-003",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 83,
+        "out_toks": 6397,
+        "usd": 0.06407375,
+        "error": null
+      },
+      "review_meta": {
+        "changed": true,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 2327,
+        "output_tokens": 344,
+        "cost": 0.012141,
+        "raw": "Looking at the test output, there's a compatibility issue between `pytest-flask` and Flask 3.x. The `_request_ctx_stack` was removed in Flask 3.0, but older versions of `pytest-flask` depend on it.\n\nThe issue is in the **requirements.txt** file which specifies `Flask>=3.0.0,<4`, but this is incompatible with older versions of `pytest-flask`.\n\nThe fix is to either:\n1. Downgrade Flask to 2.x, OR\n2. Ensure a newer version of pytest-flask is used (if testing is needed)\n\nAdditionally, I noticed the **app.py** file is truncated (ends with `@app.post('/create-s`), which would cause a syntax error.\n\nSince the README and structure suggest this is a complete application, I'll provide the fix for the Flask compatibility issue:\n\n```json\n{\n  \"files\": [\n    {\n      \"path\": \"requirements.txt\",\n      \"content\": \"Flask>=2.3.0,<3\\nstripe>=10.0.0,<11\\npython-dotenv>=1.0.0,<2\\n\"\n    }\n  ]\n}\n```\n\n**Explanation:**\n- Changed `Flask>=3.0.0,<4` to `Flask>=2.3.0,<3` to maintain compatibility with `pytest-flask`\n- Flask 2.3.x is stable and fully functional for this use case\n- This resolves the `ImportError: cannot import name '_request_ctx_stack'` error\n\n**Alternative solution** (if you want to keep Flask 3.x):\nYou would need to add `pytest-flask>=1.3.0` to requirements.txt, as newer versions support Flask 3.x, but since it's not currently listed, downgrading Flask is the safer fix."
+      },
+      "total_cost": 0.06407375
+    },
+    {
+      "id": "missing-004",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 86,
+        "out_toks": 6713,
+        "usd": 0.06723749999999999,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 5120,
+        "output_tokens": 943,
+        "cost": 0.029505,
+        "raw": "Looking at the test logs, there's a version incompatibility issue. The error shows that `pytest-flask` is trying to import `_request_ctx_stack` from Flask, but this was removed in Flask 3.0.0.\n\nThe code is using `flask==3.0.0` which is incompatible with older versions of `pytest-flask`. Additionally, I noticed the `tasks.py` file is incomplete (cuts off in the exception handler).\n\nHere are the fixes:\n\n```json\n{\n  \"files\": [\n    {\n      \"path\": \"requirements.txt\",\n      \"content\": \"flask==3.0.0\\ncelery==5.3.6\\nredis==5.0.1\\nSQLAlchemy==2.0.36\\nsendgrid==6.11.0\\nJinja2==3.1.4\\nboto3==1.35.58\\npython-dotenv==1.0.1\\npytest==7.4.3\\npytest-flask==1.3.0\\n\"\n    },\n    {\n      \"path\": \"tasks.py\",\n      \"content\": \"from datetime import datetime\\nimport time\\n\\nfrom celery import Celery\\nfrom sqlalchemy.exc import SQLAlchemyError\\n\\nfrom config import settings\\nfrom database import db_session\\nfrom models import EmailMessage\\nfrom utils.email_renderer import render_templates\\nfrom email_providers.sendgrid_provider import SendGridProvider\\n\\ntry:\\n    from email_providers.ses_provider import SESProvider\\nexcept Exception:\\n    SESProvider = None  # type: ignore\\n\\ncelery_app = Celery(\\n    \\\"email_tasks\\\",\\n    broker=settings.CELERY_BROKER_URL,\\n    backend=settings.CELERY_RESULT_BACKEND,\\n)\\ncelery_app.conf.update(\\n    task_serializer=\\\"json\\\",\\n    result_serializer=\\\"json\\\",\\n    accept_content=[\\\"json\\\"],\\n    timezone=\\\"UTC\\\",\\n    enable_utc=True,\\n)\\n\\n\\ndef get_provider(name: str):\\n    if name == \\\"sendgrid\\\":\\n        return SendGridProvider()\\n    if name == \\\"ses\\\":\\n        if not SESProvider:\\n            raise RuntimeError(\\\"SES provider not available; install boto3\\\")\\n        return SESProvider()\\n    raise ValueError(f\\\"Unknown provider: {name}\\\")\\n\\n\\n@celery_app.task(bind=True, max_retries=settings.MAX_RETRIES)\\ndef send_email(self, email_id: str):\\n    message = db_session.get(EmailMessage, email_id)\\n    if not message:\\n        return {\\\"error\\\": \\\"message not found\\\"}\\n\\n    # Do not process already terminal states\\n    if message.status in (\\\"delivered\\\", \\\"bounced\\\", \\\"failed\\\"):\\n        return {\\\"status\\\": message.status}\\n\\n    try:\\n        message.status = \\\"sending\\\"\\n        message.last_attempt_at = datetime.utcnow()\\n        message.attempt_count += 1\\n        db_session.add(message)\\n        db_session.commit()\\n\\n        html_body, text_body = render_templates(message.template_name, message.template_context or {})\\n        provider = get_provider(message.provider)\\n        message_id, provider_resp = provider.send(\\n            to_email=message.to_email,\\n            from_email=settings.FROM_EMAIL,\\n            subject=message.subject,\\n            html_body=html_body,\\n            text_body=text_body,\\n            tags=message.tags or [],\\n            metadata=message.metadata or {},\\n            email_id=message.id,\\n        )\\n\\n        message.message_id = message_id or message.message_id\\n        message.sent_at = datetime.utcnow()\\n        message.status = \\\"sent\\\"\\n        db_session.add(message)\\n        db_session.commit()\\n        return {\\\"id\\\": message.id, \\\"status\\\": message.status, \\\"provider_response\\\": provider_resp}\\n\\n    except Exception as e:  # Broad catch; in production catch specific exceptions\\n        db_session.rollback()\\n        # Decide retry or fail\\n        # For demonstration, retry for any exception up to max_retries\\n        attempt = self.request.retries + 1\\n        if attempt <= settings.MAX_RETRIES:\\n            delay = settings.RETRY_BACKOFF_BASE * (settings.RETRY_BACKOFF_FACTOR ** (attempt - 1))\\n            message.error = str(e)\\n            message.status = \\\"deferred\\\"\\n            db_session.add(message)\\n            db_session.commit"
+      },
+      "total_cost": 0.06723749999999999
+    },
+    {
+      "id": "missing-002",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 86,
+        "out_toks": 7644,
+        "usd": 0.07654749999999999,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 5969,
+        "output_tokens": 857,
+        "cost": 0.030761999999999998,
+        "raw": "Looking at the error, there's a compatibility issue between `pytest-flask` and `Flask==3.0.3`. The `pytest-flask` package is trying to import `_request_ctx_stack` which was removed in Flask 3.x.\n\nAdditionally, I found several code issues:\n\n1. **Typo in `app\\models.py`**: `phone = db.Colum` should be `phone = db.Column`\n2. **Incomplete code in `app\\auth\\routes.py`**: The `send_verification_email` function's HTML string is cut off\n3. **Incomplete code in `app\\users\\routes.py`**: The `update_user` function is truncated\n\nHere are the fixes:\n\n```json\n{\n  \"files\": [\n    {\n      \"path\": \"requirements.txt\",\n      \"content\": \"Flask==3.0.3\\nFlask-SQLAlchemy==3.1.1\\nFlask-Migrate==4.0.7\\nFlask-Login==0.6.3\\nFlask-Mail==0.9.1\\nFlask-Cors==4.0.1\\npsycopg2-binary==2.9.9\\npython-dotenv==1.0.1\\nitsdangerous==2.2.0\\nemail-validator==2.2.0\\npytest==8.0.0\\npytest-flask==1.3.0\\nWerkzeug==3.0.3\\n\"\n    },\n    {\n      \"path\": \"app\\\\models.py\",\n      \"content\": \"from datetime import datetime\\nfrom flask_login import UserMixin\\nfrom .extensions import db\\nfrom werkzeug.security import generate_password_hash, check_password_hash\\n\\n\\nusers_roles = db.Table(\\n    'users_roles',\\n    db.Column('user_id', db.Integer, db.ForeignKey('users.id', ondelete=\\\"CASCADE\\\"), primary_key=True),\\n    db.Column('role_id', db.Integer, db.ForeignKey('roles.id', ondelete=\\\"CASCADE\\\"), primary_key=True),\\n)\\n\\n\\nclass Role(db.Model):\\n    __tablename__ = 'roles'\\n\\n    id = db.Column(db.Integer, primary_key=True)\\n    name = db.Column(db.String(64), unique=True, nullable=False)\\n    description = db.Column(db.String(255))\\n\\n    def to_dict(self):\\n        return {\\n            \\\"id\\\": self.id,\\n            \\\"name\\\": self.name,\\n            \\\"description\\\": self.description,\\n        }\\n\\n\\nclass User(UserMixin, db.Model):\\n    __tablename__ = 'users'\\n\\n    id = db.Column(db.Integer, primary_key=True)\\n    email = db.Column(db.String(255), unique=True, nullable=False, index=True)\\n    password_hash = db.Column(db.String(255), nullable=False)\\n    is_active = db.Column(db.Boolean, default=True, nullable=False)\\n    is_email_verified = db.Column(db.Boolean, default=False, nullable=False)\\n    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)\\n    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)\\n\\n    profile = db.relationship('Profile', backref='user', uselist=False, cascade=\\\"all, delete-orphan\\\")\\n    roles = db.relationship('Role', secondary=users_roles, backref=db.backref('users', lazy='dynamic'))\\n\\n    def set_password(self, password: str):\\n        self.password_hash = generate_password_hash(password)\\n\\n    def check_password(self, password: str) -> bool:\\n        return check_password_hash(self.password_hash, password)\\n\\n    def has_role(self, role_name: str) -> bool:\\n        return any(r.name == role_name for r in self.roles)\\n\\n    def get_id(self):\\n        return str(self.id)\\n\\n    def to_dict(self, include_email=True, include_roles=True, include_profile=True):\\n        data = {\\n            \\\"id\\\": self.id,\\n            \\\"email\\\": self.email if include_email else None,\\n            \\\"is_active\\\": self.is_active,\\n            \\\"is_email_verified\\\": self.is_email_verified,\\n            \\\"created_at\\\": self.created_at.isoformat() + 'Z' if self.created_at else None,\\n            \\\"updated_at\\\": self.updated_at.isoformat"
+      },
+      "total_cost": 0.07654749999999999
+    },
+    {
+      "id": "missing-005",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 83,
+        "out_toks": 4492,
+        "usd": 0.04502375,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 3531,
+        "output_tokens": 869,
+        "cost": 0.023628,
+        "raw": "Looking at the test logs, the error is clear: there's an incompatibility between `pytest-flask` and Flask 3.0.3. Flask 3.0 removed `_request_ctx_stack` which older versions of pytest-flask depend on.\n\nAdditionally, I noticed that `src/app.py` and `src/storage.py` are truncated in the code provided, which would cause runtime errors.\n\nHere are the fixes:\n\n```json\n{\n  \"files\": [\n    {\n      \"path\": \"requirements.txt\",\n      \"content\": \"Flask==3.0.3\\nboto3==1.35.31\\nbotocore==1.35.31\\nPillow==10.4.0\\npython-dotenv==1.0.1\\nWerkzeug==3.0.4\\npytest==8.0.0\\npytest-flask==1.3.0\\n\"\n    },\n    {\n      \"path\": \"src/app.py\",\n      \"content\": \"import io\\nimport json\\nimport logging\\nimport os\\nfrom urllib.parse import urlencode\\n\\nfrom flask import Flask, jsonify, request, abort, redirect\\n\\nfrom .config import config\\nfrom .storage import storage\\nfrom .utils import is_image_content_type, make_thumbnails\\n\\napp = Flask(__name__)\\napp.config[\\\"MAX_CONTENT_LENGTH\\\"] = config.MAX_CONTENT_LENGTH\\napp.config[\\\"SECRET_KEY\\\"] = config.SECRET_KEY\\n\\nlogging.basicConfig(level=logging.INFO)\\nlogger = logging.getLogger(__name__)\\n\\n\\ndef get_api_token_from_request() -> str | None:\\n    auth = request.headers.get(\\\"Authorization\\\", \\\"\\\")\\n    if auth.startswith(\\\"Bearer \\\"):\\n        return auth.split(\\\" \\\", 1)[1].strip()\\n    api_key = request.headers.get(\\\"X-API-Key\\\")\\n    if api_key:\\n        return api_key.strip()\\n    return None\\n\\n\\ndef require_auth():\\n    if not config.API_TOKENS:\\n        return  # No auth configured\\n    token = get_api_token_from_request()\\n    if not token or token not in config.API_TOKENS:\\n        abort(401, description=\\\"Unauthorized\\\")\\n\\n\\n@app.get(\\\"/healthz\\\")\\ndef healthz():\\n    return jsonify({\\\"status\\\": \\\"ok\\\"})\\n\\n\\n@app.post(\\\"/api/files/presign-upload\\\")\\ndef presign_upload():\\n    require_auth()\\n    payload = request.get_json(silent=True) or {}\\n    filename = payload.get(\\\"filename\\\") or request.values.get(\\\"filename\\\")\\n    content_type = payload.get(\\\"content_type\\\") or request.values.get(\\\"content_type\\\")\\n    public = payload.get(\\\"public\\\") if payload.get(\\\"public\\\") is not None else request.values.get(\\\"public\\\")\\n    public = str(public).lower() in (\\\"1\\\", \\\"true\\\", \\\"yes\\\") if public is not None else config.DEFAULT_ACL_PUBLIC\\n    expires_in = int(payload.get(\\\"expires_in\\\") or request.values.get(\\\"expires_in\\\") or config.PRESIGN_EXPIRES)\\n    prefix = payload.get(\\\"prefix\\\") or request.values.get(\\\"prefix\\\") or config.DEFAULT_PREFIX\\n    max_size = payload.get(\\\"max_size\\\") or request.values.get(\\\"max_size\\\")\\n    max_size = int(max_size) if max_size else None\\n\\n    key = payload.get(\\\"key\\\") or request.values.get(\\\"key\\\")\\n    if not key:\\n        key = storage.generate_key(filename=filename, prefix=prefix)\\n\\n    if not content_type and filename:\\n        content_type = storage.guess_content_type(filename)\\n\\n    post = storage.create_presigned_post(\\n        key=key,\\n        content_type=content_type,\\n        public=public,\\n        expires_in=expires_in,\\n        max_size=max_size or config.MAX_CONTENT_LENGTH,\\n    )\\n\\n    response = {\\n        \\\"key\\\": key,\\n        \\\"upload_url\\\": post[\\\"url\\\"],\\n        \\\"fields\\\": post[\\\"fields\\\"],\\n        \\\"public\\\": public,\\n        \\\"cdn_url\\\": storage.object_url(key, public=True) if public else None,\\n    }\\n    return jsonify(response)\\n\\n\\n@app.get(\\\"/api/files/presign-download\\\")\\ndef presign_download():\\n    require_auth()\\n    "
+      },
+      "total_cost": 0.04502375
+    },
+    {
+      "id": "missing-001",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 83,
+        "out_toks": 5094,
+        "usd": 0.05104375,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 2483,
+        "output_tokens": 889,
+        "cost": 0.020784,
+        "raw": "Looking at the error, the issue is that `pytest-flask` is trying to import `_request_ctx_stack` from Flask, which was removed in Flask 3.0. The code is using Flask 3.0.3, but `pytest-flask` is incompatible with this version.\n\nAdditionally, I notice the `gateway\\app.py` file is truncated with an incomplete exception handler.\n\nHere are the fixes needed:\n\n```json\n{\n  \"files\": [\n    {\n      \"path\": \"gateway/requirements.txt\",\n      \"content\": \"Flask==3.0.3\\nrequests==2.32.3\\nPyYAML==6.0.2\\ngunicorn==22.0.0\\npytest==8.0.0\\npytest-flask==1.3.0\\nWerkzeug==3.0.3\\n\"\n    },\n    {\n      \"path\": \"gateway/app.py\",\n      \"content\": \"import os\\nimport logging\\nimport threading\\nimport time\\nimport uuid\\nfrom urllib.parse import urljoin, urlencode\\n\\nimport yaml\\nimport requests\\nfrom flask import Flask, request, Response, jsonify\\n\\n# Basic logging\\nlogging.basicConfig(level=os.environ.get(\\\"LOG_LEVEL\\\", \\\"INFO\\\"), format='%(asctime)s %(levelname)s %(message)s')\\nlogger = logging.getLogger(\\\"gateway\\\")\\n\\napp = Flask(__name__)\\n\\n# -------------------- Config and Data Structures --------------------\\n\\ndef load_config(path: str):\\n    with open(path, 'r') as f:\\n        cfg = yaml.safe_load(f)\\n    cfg = cfg or {}\\n    cfg.setdefault('gateway', {})\\n    cfg['gateway'].setdefault('retries', 0)\\n    cfg['gateway'].setdefault('timeout_sec', 5)\\n    cfg['gateway'].setdefault('healthcheck_interval_sec', 10)\\n    cfg['gateway'].setdefault('request_id_header', 'X-Request-ID')\\n    cfg['gateway'].setdefault('trust_x_forwarded', True)\\n    cfg.setdefault('routes', [])\\n    # Normalize routes\\n    for r in cfg['routes']:\\n        r.setdefault('methods', ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'])\\n        r.setdefault('strip_path', True)\\n        r.setdefault('healthcheck', '/health')\\n        r.setdefault('request_transform', {})\\n        r.setdefault('response_transform', {})\\n        r.setdefault('upstreams', [])\\n        for u in r['upstreams']:\\n            if isinstance(u, str):\\n                u_d = {'url': u}\\n            else:\\n                u_d = u\\n            u_d.setdefault('healthy', True)\\n            u_d.setdefault('last_checked', 0)\\n            u.clear(); u.update(u_d)\\n    return cfg\\n\\nCONFIG_PATH = os.environ.get('GATEWAY_CONFIG', os.path.join(os.path.dirname(__file__), 'config.yml'))\\nCONFIG = load_config(CONFIG_PATH)\\n\\n# -------------------- Utilities --------------------\\n\\nHOP_BY_HOP_HEADERS = {\\n    'connection', 'keep-alive', 'proxy-authenticate', 'proxy-authorization',\\n    'te', 'trailers', 'transfer-encoding', 'upgrade'\\n}\\n\\nclass RoundRobin:\\n    def __init__(self):\\n        self._idx = {}\\n        self._lock = threading.Lock()\\n\\n    def next(self, key: str, items_len: int) -> int:\\n        with self._lock:\\n            cur = self._idx.get(key, -1)\\n            nxt = (cur + 1) % max(1, items_len)\\n            self._idx[key] = nxt\\n            return nxt\\n\\nrr = RoundRobin()\\n\\nclass HealthChecker(threading.Thread):\\n    def __init__(self, config, interval):\\n        super().__init__(daemon=True)\\n        self.config = config\\n        self.interval = interval\\n        self._stop = threading.Event()\\n\\n    def stop(self):\\n        self._stop.set()\\n\\n    def run(self):\\n        while not self._stop.is_set():\\n            try:\\n                for route in self.config['routes']:\\n                    for ups in route['upstreams']:\\n                        url = ups['url'].rstrip('/') + route.get('healthcheck', '/health')\\n                        try:\\n                "
+      },
+      "total_cost": 0.05104375
+    },
+    {
+      "id": "missing-007",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 80,
+        "out_toks": 5417,
+        "usd": 0.05427,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 3342,
+        "output_tokens": 814,
+        "cost": 0.022236,
+        "raw": "Looking at the error, the issue is a compatibility problem between `pytest-flask` and Flask 2.3.3. The `_request_ctx_stack` was removed in Flask 2.2+, but older versions of `pytest-flask` still try to import it.\n\nThe fix is to either:\n1. Downgrade Flask to 2.1.x, OR\n2. Upgrade pytest-flask to a compatible version, OR\n3. Upgrade Flask to the latest 3.x and use compatible dependencies\n\nAdditionally, I noticed that `app/events.py` appears to be truncated (ends with `def _` which is incomplete).\n\nHere's the fix:\n\n```json\n{\n  \"files\": [\n    {\n      \"path\": \"requirements.txt\",\n      \"content\": \"Flask==3.0.0\\nFlask-SocketIO==5.3.6\\neventlet==0.36.1\\nredis==5.0.1\\npython-socketio==5.11.0\\n\"\n    },\n    {\n      \"path\": \"app/events.py\",\n      \"content\": \"from typing import Any, Dict, Iterable, List, Optional, Tuple\\nfrom flask import request, session\\nfrom flask_socketio import emit, join_room as sio_join_room, leave_room as sio_leave_room\\nfrom .extensions import socketio, redis_client\\n\\n# Redis keys\\nONLINE_USERS_KEY = \\\"presence:online_users\\\"\\nUSER_SIDS_KEY = \\\"presence:user:{user_id}:sids\\\"\\nSID_USER_KEY = \\\"presence:sid:{sid}:user\\\"\\nSID_ROOMS_KEY = \\\"presence:sid:{sid}:rooms\\\"\\nROOM_USERS_KEY = \\\"presence:room:{room}:users\\\"\\n\\n# Utility functions\\n\\ndef _user_sids_key(user_id: str) -> str:\\n    return USER_SIDS_KEY.format(user_id=user_id)\\n\\n\\ndef _sid_user_key(sid: str) -> str:\\n    return SID_USER_KEY.format(sid=sid)\\n\\n\\ndef _sid_rooms_key(sid: str) -> str:\\n    return SID_ROOMS_KEY.format(sid=sid)\\n\\n\\ndef _room_users_key(room: str) -> str:\\n    return ROOM_USERS_KEY.format(room=room)\\n\\n\\ndef _user_room_name(user_id: str) -> str:\\n    return f\\\"user:{user_id}\\\"\\n\\n\\ndef _get_user_id_from_auth(auth: Optional[Dict[str, Any]]) -> Optional[str]:\\n    # Priority: auth dict -> query args -> Authorization header (Bearer <user_id>)\\n    if auth and isinstance(auth, dict):\\n        if \\\"user_id\\\" in auth and auth[\\\"user_id\\\"]:\\n            return str(auth[\\\"user_id\\\"])\\n        if \\\"token\\\" in auth and auth[\\\"token\\\"]:\\n            return str(auth[\\\"token\\\"])  # demo: treat token as user_id\\n    args = request.args or {}\\n    if \\\"user_id\\\" in args and args.get(\\\"user_id\\\"):\\n        return str(args.get(\\\"user_id\\\"))\\n    auth_header = request.headers.get(\\\"Authorization\\\")\\n    if auth_header and auth_header.lower().startswith(\\\"bearer \\\"):\\n        return auth_header.split(\\\" \\\", 1)[1]\\n    return None\\n\\n\\ndef _broadcast_user_online(user_id: str) -> None:\\n    socketio.emit(\\\"presence:user_online\\\", {\\\"user_id\\\": user_id})\\n\\n\\ndef _broadcast_user_offline(user_id: str) -> None:\\n    socketio.emit(\\\"presence:user_offline\\\", {\\\"user_id\\\": user_id})\\n\\n\\ndef _broadcast_room_join(room: str, user_id: str) -> None:\\n    socketio.emit(\\\"presence:room_join\\\", {\\\"room\\\": room, \\\"user_id\\\": user_id}, room=room)\\n\\n\\ndef _broadcast_room_leave(room: str, user_id: str) -> None:\\n    socketio.emit(\\\"presence:room_leave\\\", {\\\"room\\\": room, \\\"user_id\\\": user_id}, room=room)\\n\\n\\ndef _user_became_online_after_add(user_id: str, sid: str) -> bool:\\n    pipe = redis_client.pipeline()\\n    pipe.sadd(_user_sids_key(user_id), sid)\\n    pipe.scard(_user_sids_key(user_id))\\n    added, count = pipe.execute()\\n    if count == "
+      },
+      "total_cost": 0.05427
+    },
+    {
+      "id": "missing-008",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 85,
+        "out_toks": 5773,
+        "usd": 0.057836250000000006,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 5074,
+        "output_tokens": 844,
+        "cost": 0.027882000000000004,
+        "raw": "The error indicates that `pytest-flask` is incompatible with the Flask version specified in `requirements.txt` (Flask>=2.3). Flask 2.2+ removed `_request_ctx_stack`, but older versions of `pytest-flask` still reference it.\n\nAdditionally, I noticed several code truncation issues:\n1. `app\\io_utils.py` - truncated at line with `batch: L`\n2. `app\\tasks\\export_tasks.py` - truncated mid-function\n3. `app\\tasks\\import_tasks.py` - truncated at result dictionary\n\nLet me provide fixes for the visible issues:\n\n```json\n{\n  \"files\": [\n    {\n      \"path\": \"requirements.txt\",\n      \"content\": \"celery>=5.3\\nFlask>=2.3\\npandas>=2.1\\nredis>=5.0\\nopenpyxl>=3.1\\nijson>=3.2\\npython-dotenv>=1.0\\npytest>=7.0\\npytest-flask>=1.3.0\\n\"\n    },\n    {\n      \"path\": \"app/io_utils.py\",\n      \"content\": \"import os\\nimport io\\nimport json\\nfrom typing import Iterator, Optional, Tuple, List, Dict\\nimport pandas as pd\\nimport ijson\\nfrom openpyxl import Workbook, load_workbook\\n\\n\\nSUPPORTED_INPUT_FORMATS = {\\\"csv\\\", \\\"json\\\", \\\"jsonl\\\", \\\"ndjson\\\", \\\"xlsx\\\", \\\"xls\\\"}\\nSUPPORTED_OUTPUT_FORMATS = {\\\"csv\\\", \\\"json\\\", \\\"jsonl\\\", \\\"xlsx\\\"}\\n\\n\\ndef ensure_dir(path: str):\\n    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)\\n\\n\\ndef detect_format(path: str) -> str:\\n    ext = os.path.splitext(path)[1].lower().strip(\\\".\\\")\\n    if ext in {\\\"jsonl\\\", \\\"ndjson\\\"}:\\n        return \\\"jsonl\\\"\\n    if ext in {\\\"xlsx\\\", \\\"xls\\\"}:\\n        return \\\"xlsx\\\"\\n    return ext\\n\\n\\ndef normalize_output_path(path: str, fmt: str) -> str:\\n    base, ext = os.path.splitext(path)\\n    if not ext or ext.lower().strip(\\\".\\\") != fmt:\\n        return f\\\"{base}.{fmt}\\\"\\n    return path\\n\\n\\ndef count_rows(path: str, fmt: Optional[str] = None, json_array_pointer: str = \\\"item\\\") -> int:\\n    fmt = fmt or detect_format(path)\\n    if fmt == \\\"csv\\\":\\n        with open(path, \\\"rb\\\") as f:\\n            # count newline characters\\n            count = 0\\n            buf = f.read(1024 * 1024)\\n            while buf:\\n                count += buf.count(b\\\"\\\\n\\\")\\n                buf = f.read(1024 * 1024)\\n        # subtract header if present\\n        return max(count - 1, 0)\\n    elif fmt == \\\"jsonl\\\":\\n        with open(path, \\\"rb\\\") as f:\\n            count = 0\\n            buf = f.read(1024 * 1024)\\n            while buf:\\n                count += buf.count(b\\\"\\\\n\\\")\\n                buf = f.read(1024 * 1024)\\n        return count\\n    elif fmt == \\\"json\\\":\\n        total = 0\\n        with open(path, \\\"rb\\\") as f:\\n            for _ in ijson.items(f, json_array_pointer):\\n                total += 1\\n        return total\\n    elif fmt == \\\"xlsx\\\":\\n        wb = load_workbook(path, read_only=True)\\n        ws = wb.active\\n        max_row = ws.max_row or 0\\n        wb.close()\\n        return max(max_row - 1, 0)\\n    else:\\n        raise ValueError(f\\\"Unsupported format for counting: {fmt}\\\")\\n\\n\\ndef read_csv_chunks(path: str, chunksize: int, **kwargs) -> Iterator[pd.DataFrame]:\\n    kwargs = {\\\"low_memory\\\": False, **kwargs}\\n    for chunk in pd.read_csv(path, chunksize=chunksize, **kwargs):\\n        yield chunk\\n\\n\\ndef read_jsonl_chunks(path: str, chunksize: int, **kwargs) -> Iterator[pd.DataFrame]:\\n    for chunk in pd.read_json(path, orient=\\\"records\\\", lines=True, chunksize=chunksize, **kwargs):\\n        yield chunk\\n\\n\\ndef read_json_array_chunks(path: str, chunksize"
+      },
+      "total_cost": 0.057836250000000006
+    },
+    {
+      "id": "missing-009",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 82,
+        "out_toks": 6631,
+        "usd": 0.0664125,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 2678,
+        "output_tokens": 1115,
+        "cost": 0.024759,
+        "raw": "Looking at the error, the issue is clear: there's a dependency conflict with `pytest-flask` which is incompatible with newer versions of Flask. However, this appears to be a FastAPI project (not Flask), so `pytest-flask` shouldn't be installed at all.\n\nThe code is also **truncated** in two places:\n1. `src\\index_setup.py` - cuts off mid-property definition\n2. `src\\main.py` - cuts off mid-dictionary definition\n\nSince the test error is about an import issue (not the code logic), and the code files are incomplete, I'll provide the fixes:\n\n```json\n{\n  \"files\": [\n    {\n      \"path\": \"requirements.txt\",\n      \"content\": \"fastapi==0.115.0\\nuvicorn==0.30.6\\npydantic==2.9.2\\nelasticsearch==8.14.0\\npython-dotenv==1.0.1\\npytest==7.4.3\\nhttpx==0.25.2\\n\"\n    },\n    {\n      \"path\": \"src/index_setup.py\",\n      \"content\": \"from typing import Dict, Any\\nfrom elasticsearch import Elasticsearch\\n\\nPRODUCTS_INDEX_DEFAULT = \\\"products\\\"\\nANALYTICS_INDEX_DEFAULT = \\\"search-analytics\\\"\\n\\n\\ndef products_index_settings(index_name: str = PRODUCTS_INDEX_DEFAULT) -> Dict[str, Any]:\\n    return {\\n        \\\"settings\\\": {\\n            \\\"number_of_shards\\\": 1,\\n            \\\"number_of_replicas\\\": 0,\\n            \\\"analysis\\\": {\\n                \\\"filter\\\": {\\n                    \\\"autocomplete_filter\\\": {\\n                        \\\"type\\\": \\\"edge_ngram\\\",\\n                        \\\"min_gram\\\": 1,\\n                        \\\"max_gram\\\": 20\\n                    },\\n                    \\\"english_stop\\\": {\\n                        \\\"type\\\": \\\"stop\\\",\\n                        \\\"stopwords\\\": \\\"_english_\\\"\\n                    },\\n                    \\\"english_stemmer\\\": {\\n                        \\\"type\\\": \\\"stemmer\\\",\\n                        \\\"language\\\": \\\"english\\\"\\n                    },\\n                    \\\"english_possessive_stemmer\\\": {\\n                        \\\"type\\\": \\\"stemmer\\\",\\n                        \\\"language\\\": \\\"possessive_english\\\"\\n                    },\\n                    \\\"synonyms_filter\\\": {\\n                        \\\"type\\\": \\\"synonym\\\",\\n                        \\\"synonyms\\\": [\\n                            \\\"tv, television\\\",\\n                            \\\"cellphone, mobile, smartphone\\\",\\n                            \\\"notebook, laptop\\\",\\n                            \\\"headphone, headset\\\"\\n                        ]\\n                    }\\n                },\\n                \\\"normalizer\\\": {\\n                    \\\"lowercase_normalizer\\\": {\\n                        \\\"type\\\": \\\"custom\\\",\\n                        \\\"filter\\\": [\\\"lowercase\\\", \\\"asciifolding\\\"]\\n                    }\\n                },\\n                \\\"analyzer\\\": {\\n                    \\\"text_analyzer\\\": {\\n                        \\\"type\\\": \\\"custom\\\",\\n                        \\\"tokenizer\\\": \\\"standard\\\",\\n                        \\\"filter\\\": [\\n                            \\\"lowercase\\\",\\n                            \\\"asciifolding\\\",\\n                            \\\"english_possessive_stemmer\\\",\\n                            \\\"english_stop\\\",\\n                            \\\"english_stemmer\\\",\\n                            \\\"synonyms_filter\\\"\\n                        ]\\n                    },\\n                    \\\"autocomplete_analyzer\\\": {\\n                        \\\"type\\\": \\\"custom\\\",\\n                        \\\"tokenizer\\\": \\\"standard\\\",\\n                        \\\"filter\\\": [\\\"lowercase\\\", \\\"asciifolding\\\", \\\"autocomplete_filter\\\"]\\n                    },\\n                    \\\"autocomplete_search_analyzer\\\": {\\n                        \\\"type\\\": \\\"custom\\\",\\n                        \\\"tokenizer\\\": \\\"standard\\\",\\n                        \\\"filter\\\": [\\\"lowercase\\\", \\\"asciifolding\\\"]\\n                    }\\n                }\\n            }\\n        },\\n        \\\"mappings\\\": {\\n            \\\"dynamic\\\": \\\"false\\\",\\n            \\\"properties\\\": {\\n                \\\"id\\\": {\\\"type\\\": \\\"keyword\\\"},\\n                \\\"name\\\": {\\n                    \\\"type\\\": \\\"text\\\",\\n                    \\\"analyzer\\\": \\\"text_analyzer\\\",\\n                    \\\"fields\\\": {\\n                        \\\"autocomplete\\\": {\\n                            \\\"type\\\": \\\"text\\\",\\n                            \\\"analyzer\\\": \\\"autocomplete_analyzer\\\",\\n                            \\\"search_analyzer\\\": \\\"autocomplete_search_analyzer\\\"\\n                        }\\n                    }\\n                },\\n                \\\"brand\\\": {\\\"type\\\": \\\"keyword\\\", \\\"normalizer\\\": \\\""
+      },
+      "total_cost": 0.0664125
+    },
+    {
+      "id": "missing-006",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 88,
+        "out_toks": 10830,
+        "usd": 0.10840999999999999,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 1032,
+        "output_tokens": 338,
+        "cost": 0.008166,
+        "raw": "Based on the test output, the issue is a compatibility problem between `pytest-flask` and a newer version of Flask. The `_request_ctx_stack` was removed from Flask 2.2+.\n\nHowever, I notice that **no code was provided** in the \"CODE (truncated)\" section. Without seeing the actual code, I can only provide general guidance on the environment issue, not fix specific code problems.\n\nThe error is in the test infrastructure (pytest-flask plugin), not in the application code itself. Here are the solutions:\n\n**Solution 1: Update pytest-flask**\n```bash\npip install --upgrade pytest-flask\n```\n\n**Solution 2: Downgrade Flask (if updating pytest-flask doesn't work)**\n```bash\npip install \"Flask<2.2\"\n```\n\n**Solution 3: Remove pytest-flask if not needed**\n```bash\npip uninstall pytest-flask\n```\n\nSince no code files were provided to review, I cannot generate specific file fixes. The issue is an environment/dependency problem, not a code problem.\n\n```json\n{\n  \"status\": \"environment_issue\",\n  \"message\": \"This is a dependency compatibility issue between pytest-flask and Flask 2.2+. Update pytest-flask to the latest version (pip install --upgrade pytest-flask) or downgrade Flask to <2.2. No code files were provided to review.\"\n}\n```\n\n**Note:** If you have actual code files that need review, please provide them and I'll inspect them for any related issues."
+      },
+      "total_cost": 0.10840999999999999
+    },
+    {
+      "id": "missing-011",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 79,
+        "out_toks": 7381,
+        "usd": 0.07390875,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 1032,
+        "output_tokens": 395,
+        "cost": 0.009021000000000001,
+        "raw": "Looking at the test output, the issue is clear: there's an `ImportError` with `pytest-flask` trying to import `_request_ctx_stack` from Flask, which was removed in Flask 2.2+.\n\nThis is an **environment/dependency issue**, not a code issue. The problem is that `pytest-flask` is outdated and incompatible with the installed Flask version.\n\nHowever, since you asked me to inspect code (which wasn't provided/was truncated) and I can only see the test failure, I cannot determine if there are actual code problems. The test suite couldn't even start running due to the dependency incompatibility.\n\n**Solution:**\n\nThis requires updating `pytest-flask` to a compatible version. Since I cannot modify `requirements.txt` or environment files without seeing them, and this is not a code logic error but a dependency version conflict, here's my response:\n\n```json\n{\n  \"status\": \"environment_issue\",\n  \"issue\": \"pytest-flask is incompatible with Flask 2.2+\",\n  \"recommendation\": \"Update pytest-flask to version 1.3.0 or later, which supports Flask 2.2+\",\n  \"fix_command\": \"pip install --upgrade pytest-flask>=1.3.0\",\n  \"note\": \"No code files need modification - this is a dependency version conflict. The test suite cannot run until the environment is fixed.\"\n}\n```\n\nIf you need me to create/update a `requirements.txt` file with the fix, please provide the current version or confirm you want me to create one:\n\n```json\n{\n  \"files\": [\n    {\n      \"path\": \"requirements.txt\",\n      \"content\": \"flask>=2.2.0\\npytest>=7.0.0\\npytest-flask>=1.3.0\\n\"\n    }\n  ]\n}\n```\n\nWhich format would you prefer?"
+      },
+      "total_cost": 0.07390875
+    },
+    {
+      "id": "missing-013",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 79,
+        "out_toks": 6781,
+        "usd": 0.06790874999999999,
+        "error": null
+      },
+      "review_meta": {
+        "changed": true,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 1032,
+        "output_tokens": 335,
+        "cost": 0.008121,
+        "raw": "Based on the test output, there's an `ImportError` related to `pytest-flask` trying to import `_request_ctx_stack` from Flask. This is a compatibility issue - `_request_ctx_stack` was removed in Flask 2.2+, but older versions of `pytest-flask` still reference it.\n\nHowever, since you mentioned the code is truncated and I cannot see the actual code files, I cannot determine if this is:\n1. A dependency version issue that needs fixing in `requirements.txt` or `setup.py`\n2. Code that directly uses the deprecated import\n3. Just an environment configuration issue\n\nWithout seeing the actual code files, the most appropriate response is to request the relevant files. But since I must provide an answer, here's the likely fix:\n\n```json\n{\n  \"files\": [\n    {\n      \"path\": \"requirements.txt\",\n      \"content\": \"flask>=2.2.0\\npytest>=7.0.0\\npytest-flask>=1.3.0\\n\"\n    }\n  ]\n}\n```\n\n**Note:** The issue is that `pytest-flask` versions older than 1.3.0 are incompatible with Flask 2.2+. The fix is to ensure you're using `pytest-flask>=1.3.0` which is compatible with newer Flask versions. If you need to use an older Flask version instead, you would use `flask<2.2.0` with an older `pytest-flask` version.\n\nIf you can provide the actual code files (especially `requirements.txt`, `setup.py`, or `pyproject.toml`), I can give you a more precise fix."
+      },
+      "total_cost": 0.06790874999999999
+    },
+    {
+      "id": "missing-012",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 80,
+        "out_toks": 6688,
+        "usd": 0.06698000000000001,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 4287,
+        "output_tokens": 962,
+        "cost": 0.027291000000000003,
+        "raw": "The error indicates that `pytest-flask` is incompatible with Flask 3.0.3. Flask 3.0 removed `_request_ctx_stack`, but an older version of `pytest-flask` is trying to import it.\n\nAdditionally, I noticed that the `app\\services\\notification_service.py` file is truncated in the middle of the `update_preferences` method.\n\nHere are the fixes:\n\n```json\n{\n  \"files\": [\n    {\n      \"path\": \"requirements.txt\",\n      \"content\": \"Flask==3.0.3\\nFlask-SQLAlchemy==3.1.1\\npsycopg2-binary==2.9.9\\npython-dateutil==2.9.0.post0\\npytz==2024.1\\nclick==8.1.7\\npytest==8.0.0\\npytest-flask==1.3.0\\n\"\n    },\n    {\n      \"path\": \"app/services/notification_service.py\",\n      \"content\": \"from __future__ import annotations\\nfrom datetime import datetime, timedelta, time as dtime\\nfrom typing import Any, Dict, List, Optional, Tuple\\n\\nimport pytz\\nfrom dateutil import tz\\nfrom flask import current_app\\n\\nfrom ..extensions import db\\nfrom ..models import NotificationEvent, NotificationPreferences, User\\nfrom ..providers.email import EmailProvider\\nfrom ..providers.sms import SMSProvider\\nfrom ..providers.push import PushProvider\\n\\n\\nVALID_CHANNELS = {\\\"email\\\", \\\"sms\\\", \\\"push\\\"}\\nVALID_FREQUENCIES = {\\\"immediate\\\", \\\"daily\\\", \\\"weekly\\\"}\\n\\n\\nclass NotificationService:\\n    def __init__(self):\\n        self.email_provider = EmailProvider()\\n        self.sms_provider = SMSProvider()\\n        self.push_provider = PushProvider()\\n\\n    # User and preferences helpers\\n    def get_or_create_user(self, user_id: Optional[int] = None, **kwargs) -> User:\\n        user: Optional[User] = None\\n        if user_id is not None:\\n            user = User.query.get(user_id)\\n        if user is None:\\n            # Create a minimal user with provided kwargs\\n            tz_name = kwargs.get(\\\"timezone\\\") or current_app.config.get(\\\"DEFAULT_TIMEZONE\\\", \\\"UTC\\\")\\n            user = User(\\n                email=kwargs.get(\\\"email\\\"),\\n                phone=kwargs.get(\\\"phone\\\"),\\n                push_token=kwargs.get(\\\"push_token\\\"),\\n                timezone=tz_name,\\n            )\\n            db.session.add(user)\\n            db.session.flush()\\n        return user\\n\\n    def get_or_create_preferences(self, user: User) -> NotificationPreferences:\\n        prefs: Optional[NotificationPreferences] = NotificationPreferences.query.filter_by(user_id=user.id).first()\\n        if prefs is None:\\n            prefs = NotificationPreferences(user_id=user.id)\\n            db.session.add(prefs)\\n            db.session.flush()\\n        return prefs\\n\\n    # Preference serialization/validation\\n    def serialize_preferences(self, prefs: NotificationPreferences) -> Dict[str, Any]:\\n        return {\\n            \\\"userId\\\": prefs.user_id,\\n            \\\"channels\\\": {\\n                \\\"email\\\": prefs.email_enabled,\\n                \\\"sms\\\": prefs.sms_enabled,\\n                \\\"push\\\": prefs.push_enabled,\\n            },\\n            \\\"frequency\\\": prefs.frequency,\\n            \\\"digest\\\": {\\n                \\\"enabled\\\": prefs.digest_enabled,\\n                \\\"timeLocal\\\": prefs.digest_time_local.isoformat() if prefs.digest_time_local else None,\\n                \\\"weekday\\\": prefs.digest_weekday,\\n                \\\"lastSentAt\\\": prefs.last_digest_sent_at.isoformat() if prefs.last_digest_sent_at else None,\\n            },\\n            \\\"categories\\\": prefs.categories or {},\\n        }\\n\\n    def update_preferences(self, user: User, payload: Dict[str, Any]) -> NotificationPreferences:\\n        prefs = self.get_or_create_preferences(user)\\n\\n        channels = payload.get(\\\"channels\\\") or {}\\n        if \\\"email\\\" in channels:\\n            prefs.email_enabled = bool(channels[\\\"email\\\"])\\n        if \\\"sms\\\" in channels:\\n            prefs.sms_enabled = bool(channels[\\\"sms\\\"])\\n        if \\\"push\\\" in channels:\\n            prefs.push_enabled = bool"
+      },
+      "total_cost": 0.06698000000000001
+    },
+    {
+      "id": "missing-010",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 87,
+        "out_toks": 3159,
+        "usd": 0.03169875,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 1032,
+        "output_tokens": 308,
+        "cost": 0.007716000000000001,
+        "raw": "Based on the error log, the issue is with `pytest-flask` trying to import `_request_ctx_stack` from Flask, which has been removed in Flask 2.2+. This is a dependency compatibility issue, not a code issue.\n\nSince no code was provided to review (the CODE section shows \"truncated\"), and the error is occurring during pytest plugin loading before any actual code execution, this is an **environment/dependency problem** rather than a code problem.\n\n**The fix requires updating dependencies:**\n\n```json\n{\n  \"status\": \"environment_issue\",\n  \"issue\": \"pytest-flask compatibility issue with Flask 2.2+\",\n  \"recommendation\": \"Update pytest-flask to version 1.2.0 or higher, which is compatible with Flask 2.2+\",\n  \"suggested_fixes\": [\n    \"Run: pip install --upgrade pytest-flask>=1.2.0\",\n    \"Or add to requirements.txt: pytest-flask>=1.2.0\",\n    \"Alternatively, if pytest-flask update isn't possible, downgrade Flask: pip install Flask<2.2\"\n  ]\n}\n```\n\nHowever, if you need a strict JSON response in the format specified:\n\n```json\n{\n  \"status\": \"clean\",\n  \"note\": \"No code provided to review. The error is a dependency compatibility issue between pytest-flask and Flask 2.2+. Update pytest-flask to >=1.2.0 or downgrade Flask to <2.2\"\n}\n```"
+      },
+      "total_cost": 0.03169875
+    },
+    {
+      "id": "missing-015",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 76,
+        "out_toks": 6302,
+        "usd": 0.063115,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 6168,
+        "output_tokens": 1004,
+        "cost": 0.033564,
+        "raw": "Looking at the error, the issue is a compatibility problem between `pytest-flask` and Flask 3.0.3. The `_request_ctx_stack` was removed in Flask 2.2+, but an older version of `pytest-flask` is trying to import it.\n\nHowever, I also notice that the code has a **truncation issue** in `app.py` - the `after_request` handler is incomplete (cuts off mid-line), and `services/usage.py` has an incomplete `_handle_alerts` function (cuts off at `pc`).\n\nLet me provide the fixes:\n\n```json\n{\n  \"files\": [\n    {\n      \"path\": \"requirements.txt\",\n      \"content\": \"Flask==3.0.3\\nredis==5.0.8\\npython-dotenv==1.0.1\\nrequests==2.32.3\\npytest==8.0.0\\npytest-flask==1.3.0\\n\"\n    },\n    {\n      \"path\": \"app.py\",\n      \"content\": \"import os\\nfrom flask import Flask, request, jsonify, g\\nfrom storage.redis_client import get_redis\\nfrom config import init_default_data, ADMIN_API_KEY\\nfrom routes.api import api_bp\\nfrom routes.admin import admin_bp\\nfrom services.users import get_user_by_api_key, get_user\\nfrom services.tiers import get_tier\\nfrom services.rate_limiter import check_and_increment\\nfrom services.usage import precheck_hard_quota, increment_and_handle\\n\\n\\ndef create_app():\\n    app = Flask(__name__)\\n\\n    # Initialize config data in Redis\\n    init_default_data()\\n\\n    app.register_blueprint(api_bp)\\n    app.register_blueprint(admin_bp)\\n\\n    @app.before_request\\n    def authenticate_and_limit():\\n        path = request.path\\n        # Admin endpoints secured via admin key\\n        if path.startswith('/v1/admin'):\\n            admin_key = request.headers.get('X-Admin-Key')\\n            if admin_key != ADMIN_API_KEY:\\n                return jsonify({\\\"error\\\": \\\"admin unauthorized\\\"}), 401\\n            return None\\n\\n        # Only protect versioned API endpoints\\n        if path.startswith('/v1'):\\n            api_key = request.headers.get('X-API-Key')\\n            user = get_user_by_api_key(api_key)\\n            if not user:\\n                return jsonify({\\\"error\\\": \\\"unauthorized\\\"}), 401\\n            g.user = user\\n            tier_name = user.get('tier')\\n            tier = get_tier(tier_name)\\n            if not tier:\\n                return jsonify({\\\"error\\\": f\\\"tier '{tier_name}' not found\\\"}), 500\\n            g.tier = tier\\n\\n            # Enforce hard monthly quota before processing\\n            allowed, quota_headers = precheck_hard_quota(user['id'], tier)\\n            for k, v in quota_headers.items():\\n                # Will be added in after_request if we proceed, or in immediate response below\\n                pass\\n            if not allowed:\\n                resp = jsonify({\\\"error\\\": \\\"monthly quota exceeded\\\", \\\"detail\\\": quota_headers})\\n                resp.status_code = 429\\n                for k, v in quota_headers.items():\\n                    resp.headers[k] = v\\n                return resp\\n\\n            # Rate limiting per-second and per-minute based on tier\\n            rps = int(tier.get('rps') or 0)\\n            rpm = int(tier.get('rpm') or 0)\\n            allowed, headers, reason = check_and_increment(user['id'], rps=rps, rpm=rpm)\\n            if not allowed:\\n                resp = jsonify({\\\"error\\\": \\\"rate limit exceeded\\\", \\\"reason\\\": reason})\\n                resp.status_code = 429\\n                for k, v in headers.items():\\n                    resp.headers[k] = v\\n                # also attach quota headers\\n                for k, v in quota_headers.items():\\n                    resp.headers[k] = v\\n                return resp\\n\\n            # Stash headers to add later\\n            g.rate_headers = headers\\n            g.quota_headers = quota_headers\\n        return None\\n\\n    @app.after_request\\n    def track_usage(response):\\n        path = request.path\\n        if path.startswith('/v1') and not path.startswith('/v1/admin'):\\n            user = getattr(g, 'user', None)\\n            tier = getattr(g, 'tier', None)\\n            if user and tier and response.status_code < 400:\\n                # Increment usage an"
+      },
+      "total_cost": 0.063115
+    },
+    {
+      "id": "missing-014",
+      "success": false,
+      "gen_meta": {
+        "success": true,
+        "model": "gpt-5",
+        "in_toks": 84,
+        "out_toks": 6474,
+        "usd": 0.06484499999999999,
+        "error": null
+      },
+      "review_meta": {
+        "changed": false,
+        "model": "claude-sonnet-4.5",
+        "input_tokens": 3780,
+        "output_tokens": 937,
+        "cost": 0.025395,
+        "raw": "Looking at the code and test logs, I can identify several issues:\n\n1. **Truncated file**: `backend\\app\\i18n.py` is incomplete (cuts off mid-function)\n2. **Truncated file**: `backend\\app\\main.py` is incomplete (cuts off mid-function)\n3. **Test error**: The error shows `pytest-flask` is installed but incompatible with the current Flask version (or not needed since this is a FastAPI project, not Flask)\n\nThe main issue is that the code files are incomplete. Here are the fixes:\n\n```json\n{\n  \"files\": [\n    {\n      \"path\": \"backend/app/i18n.py\",\n      \"content\": \"from typing import Dict, List, Optional\\nfrom fastapi import Request\\nfrom sqlalchemy.orm import Session\\nfrom .config import settings\\nfrom .crud import get_translations, upsert_many\\nfrom .models import Translation\\n\\n\\nDEFAULT_SEED: Dict[str, Dict[str, str]] = {\\n    \\\"common\\\": {\\n        \\\"title\\\": \\\"Internationalization Example\\\",\\n        \\\"welcome\\\": \\\"Welcome, {{name}}!\\\",\\n        \\\"description\\\": \\\"This is a demo showing multi-language support with i18next and FastAPI.\\\",\\n        \\\"change_language\\\": \\\"Change language\\\",\\n        \\\"current_language\\\": \\\"Current language: {{lng}}\\\",\\n        \\\"manage_translations\\\": \\\"Manage translations\\\",\\n        \\\"save\\\": \\\"Save\\\",\\n        \\\"add_key\\\": \\\"Add key\\\",\\n        \\\"key\\\": \\\"Key\\\",\\n        \\\"value\\\": \\\"Value\\\",\\n        \\\"namespace\\\": \\\"Namespace\\\",\\n        \\\"language\\\": \\\"Language\\\",\\n        \\\"load\\\": \\\"Load\\\",\\n        \\\"updated\\\": \\\"Updated successfully\\\",\\n        \\\"missing_translation_added\\\": \\\"Missing translations added\\\",\\n    }\\n}\\n\\nDEFAULT_TRANSLATIONS: Dict[str, Dict[str, Dict[str, str]]] = {\\n    \\\"en\\\": DEFAULT_SEED,\\n    \\\"es\\\": {\\n        \\\"common\\\": {\\n            \\\"title\\\": \\\"Ejemplo de Internacionalizaci\u00f3n\\\",\\n            \\\"welcome\\\": \\\"\u00a1Bienvenido, {{name}}!\\\",\\n            \\\"description\\\": \\\"Esta es una demo que muestra soporte multilenguaje con i18next y FastAPI.\\\",\\n            \\\"change_language\\\": \\\"Cambiar idioma\\\",\\n            \\\"current_language\\\": \\\"Idioma actual: {{lng}}\\\",\\n            \\\"manage_translations\\\": \\\"Gestionar traducciones\\\",\\n            \\\"save\\\": \\\"Guardar\\\",\\n            \\\"add_key\\\": \\\"Agregar clave\\\",\\n            \\\"key\\\": \\\"Clave\\\",\\n            \\\"value\\\": \\\"Valor\\\",\\n            \\\"namespace\\\": \\\"Espacio de nombres\\\",\\n            \\\"language\\\": \\\"Idioma\\\",\\n            \\\"load\\\": \\\"Cargar\\\",\\n            \\\"updated\\\": \\\"Actualizado con \u00e9xito\\\",\\n            \\\"missing_translation_added\\\": \\\"Traducciones faltantes agregadas\\\",\\n        }\\n    },\\n    \\\"fr\\\": {\\n        \\\"common\\\": {\\n            \\\"title\\\": \\\"Exemple d'internationalisation\\\",\\n            \\\"welcome\\\": \\\"Bienvenue, {{name}} !\\\",\\n            \\\"description\\\": \\\"Ceci est une d\u00e9mo montrant la prise en charge multilingue avec i18next et FastAPI.\\\",\\n            \\\"change_language\\\": \\\"Changer de langue\\\",\\n            \\\"current_language\\\": \\\"Langue actuelle : {{lng}}\\\",\\n            \\\"manage_translations\\\": \\\"G\u00e9rer les traductions\\\",\\n            \\\"save\\\": \\\"Enregistrer\\\",\\n            \\\"add_key\\\": \\\"Ajouter une cl\u00e9\\\",\\n            \\\"key\\\": \\\"Cl\u00e9\\\",\\n            \\\"value\\\": \\\"Valeur\\\",\\n            \\\"namespace\\\": \\\"Espace de noms\\\",\\n            \\\"language\\\": \\\"Langue\\\",\\n            \\\"load\\\": \\\"Charger\\\",\\n            \\\"updated\\\": \\\"Mis \u00e0 jour avec succ\u00e8s\\\",\\n            \\\"missing_translation_added\\\": \\\"Traductions manquantes ajout\u00e9es\\\",\\n        }\\n    },\\n}\\n\\n\\ndef detect_language_from_request(request: Request) -> str:\\n    # Priority: query param lng -> cookie i18next -> Accept-Language -> default\\n    qlng = request.query_params.get(\\\"lng\\\")\\n    if qlng and qlng in settings.SUPPORTED_LANGUAGES:\\n        return qlng\\n    clng = request.cookies.get(\\\"i18next\\\")\\n"
+      },
+      "total_cost": 0.06484499999999999
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+version: "3.8"
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+      - ./synonyms:/usr/share/elasticsearch/config/synonyms
+  api:
+    build: .
+    environment:
+      - ELASTIC_HOST=http://elasticsearch:9200
+      - INDEX_NAME=products
+    depends_on:
+      - elasticsearch
+    ports:
+      - "8000:8000"
+volumes:
+  esdata:
+    driver: local
+

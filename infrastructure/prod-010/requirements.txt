@@ -1,0 +1,4 @@
+Flask>=2.3
+Flask-Compress>=1.14
+brotli>=1.1
+

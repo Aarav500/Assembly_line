@@ -1,0 +1,29 @@
+version: "3.9"
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+  web:
+    build: .
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DEFAULT_TTL=300
+      - PURGE_TOKEN=devtoken
+      - VARNISH_HOST=varnish
+      - VARNISH_PORT=6081
+      - CACHE_NAMESPACE=demo
+      - FLASK_ENV=production
+    depends_on:
+      - redis
+  varnish:
+    image: varnish:7.5
+    ports:
+      - "8080:6081"
+    environment:
+      - VARNISH_SIZE=256M
+    depends_on:
+      - web
+    volumes:
+      - ./varnish/default.vcl:/etc/varnish/default.vcl:ro
+

@@ -1,0 +1,51 @@
+version: "3.8"
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=50s"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    environment:
+      - MEILI_NO_ANALYTICS=true
+      - MEILI_ENV=development
+      - MEILI_MASTER_KEY=masterKey
+    ports:
+      - "7700:7700"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:7700/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    environment:
+      - FLASK_APP=wsgi.py
+      - FLASK_DEBUG=1
+      - SEARCH_BACKEND=${SEARCH_BACKEND:-elasticsearch}
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - MEILISEARCH_URL=http://meilisearch:7700
+      - MEILISEARCH_API_KEY=masterKey
+      - DEFAULT_INDEX_NAME=documents
+    volumes:
+      - ./:/app
+    ports:
+      - "5000:5000"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      meilisearch:
+        condition: service_healthy
+    command: flask run --host=0.0.0.0 --port=5000
+

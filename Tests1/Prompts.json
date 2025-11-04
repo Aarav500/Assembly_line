@@ -1,0 +1,30 @@
+[
+  {
+    "id": "fix-a-016",
+    "title": "fix-one-click-create-project-manifest",
+    "description": "Fix the failing test in a-016 - one-click create project manifest feature. Ensure JSON serialization works correctly.",
+    "stack": "python,flask",
+    "test": true
+  },
+  {
+    "id": "fix-a-041",
+    "title": "fix-auto-suggest-monetization-options",
+    "description": "Fix the failing test in a-041 - auto-suggest monetization feature. Fix the pricing calculation logic.",
+    "stack": "python,flask",
+    "test": true
+  },
+  {
+    "id": "fix-c-018",
+    "title": "fix-payment-gateway-stripe-integration",
+    "description": "Fix the failing test in c-018 - payment gateway with Stripe. Add proper error handling for API failures.",
+    "stack": "python,flask,stripe",
+    "test": true
+  },
+  {
+    "id": "fix-c-025",
+    "title": "fix-full-text-search-elasticsearch",
+    "description": "Fix the failing test in c-025 - Elasticsearch integration. Handle connection errors gracefully.",
+    "stack": "python,elasticsearch",
+    "test": true
+  }
+]

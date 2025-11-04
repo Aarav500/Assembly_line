@@ -1,0 +1,6 @@
+Flask>=3.0
+PyYAML>=6.0
+pydantic>=2.3
+boto3>=1.28
+hvac>=1.2
+

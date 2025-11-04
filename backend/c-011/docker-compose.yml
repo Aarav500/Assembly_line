@@ -1,0 +1,29 @@
+version: "3.9"
+services:
+  provider:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - DOWNSTREAM_BASE_URL=http://wiremock:8080
+    ports:
+      - "5000:5000"
+    depends_on:
+      - wiremock
+  wiremock:
+    image: wiremock/wiremock:3.5.3
+    command: ["--verbose"]
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./wiremock/mappings:/home/wiremock/mappings
+      - ./wiremock/__files:/home/wiremock/__files
+  pact-verifier:
+    image: pactfoundation/pact-cli:latest
+    depends_on:
+      - provider
+    volumes:
+      - ./pacts:/pacts:ro
+    command: >-
+      sh -lc "ls -l /pacts && pact-verifier --provider-base-url=http://provider:5000 --state-change-url=http://provider:5000/_pact/state-change --state-change-use-body=true /pacts/*.json"
+

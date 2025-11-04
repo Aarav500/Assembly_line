@@ -1,0 +1,5 @@
+black==24.8.0
+flake8==7.1.1
+pytest==8.3.2
+watchfiles==0.24.0
+

@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: analytics
+      POSTGRES_PASSWORD: analytics
+      POSTGRES_DB: analytics
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+  api:
+    build: .
+    environment:
+      FLASK_ENV: development
+      FLASK_APP: service.main:create_app
+      DATABASE_URL: postgresql+psycopg2://analytics:analytics@db:5432/analytics
+      APP_SECRET_KEY: devsecret
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    command: ["gunicorn", "-w", "3", "-b", "0.0.0.0:8000", "service.main:create_app"]
+volumes:
+  db_data: {}
+

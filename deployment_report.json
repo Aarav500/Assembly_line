@@ -1,0 +1,12 @@
+{
+  "timestamp": "2025-10-28T23:25:02.853679",
+  "stats": {
+    "total_modules": 436,
+    "fixed_modules": 436,
+    "pycache_removed": 0,
+    "init_created": 0,
+    "entry_points_fixed": 0,
+    "shared_created": 10
+  },
+  "duration_seconds": 38.710519
+}

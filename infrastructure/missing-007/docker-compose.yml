@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+  app:
+    build: .
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - MESSAGE_QUEUE_URL=redis://redis:6379/0
+      - CORS_ALLOWED_ORIGINS=*
+      - SECRET_KEY=change-me
+    ports:
+      - "5000:5000"
+    depends_on:
+      - redis
+

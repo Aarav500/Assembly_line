@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  web:
+    image: nginx:1.25-alpine
+    ports:
+      - "0:80" # random host port -> container 80
+    environment:
+      - NGINX_ENTRYPOINT_QUIET_LOGS=1
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+    restart: unless-stopped
+

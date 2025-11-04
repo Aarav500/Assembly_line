@@ -1,0 +1,4 @@
+Flask>=3.0.0
+pydantic>=2.5.0
+bleach>=6.1.0
+

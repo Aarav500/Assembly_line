@@ -1,0 +1,74 @@
+version: "3.9"
+services:
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    ports:
+      - "16686:16686" # Jaeger UI
+      - "14268:14268"
+      - "14250:14250"
+
+  otel-collector:
+    image: otel/opentelemetry-collector:0.115.1
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+    ports:
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP
+    depends_on:
+      - jaeger
+
+  service-a:
+    build: .
+    command: ["python", "service_a/app.py"]
+    environment:
+      - SERVICE_B_URL=http://service-b:5001
+      - REDIS_URL=redis://redis:6379/0
+      - QUEUE_NAME=jobs
+      - TRACE_EXPORTER=otlp
+      - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_TRACES_SAMPLER=always_on
+    depends_on:
+      - redis
+      - service-b
+      - otel-collector
+    ports:
+      - "5000:5000"
+
+  service-b:
+    build: .
+    command: ["python", "service_b/app.py"]
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - TRACE_EXPORTER=otlp
+      - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_TRACES_SAMPLER=always_on
+    depends_on:
+      - redis
+      - otel-collector
+    ports:
+      - "5001:5001"
+
+  worker:
+    build: .
+    command: ["python", "worker/worker.py"]
+    environment:
+      - SERVICE_B_URL=http://service-b:5001
+      - REDIS_URL=redis://redis:6379/0
+      - QUEUE_NAME=jobs
+      - TRACE_EXPORTER=otlp
+      - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_TRACES_SAMPLER=always_on
+    depends_on:
+      - redis
+      - otel-collector
+      - service-b
+

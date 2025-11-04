@@ -1,0 +1,1025 @@
+﻿FileName	FullPath	Status	Error
+report_a-001.html	D:\Assemblyline\unified_app\reports\report_a-001.html	PASSED	
+report_a-002.html	D:\Assemblyline\unified_app\reports\report_a-002.html	PASSED	
+report_a-003.html	D:\Assemblyline\unified_app\reports\report_a-003.html	PASSED	
+report_a-004.html	D:\Assemblyline\unified_app\reports\report_a-004.html	PASSED	
+report_a-005.html	D:\Assemblyline\unified_app\reports\report_a-005.html	FAILED	"backend\a-005\test_smoke_a-005.py:9: in test_module_imports
+    import app
+backend\a-005\app.py:6: in <module>
+    from fingerprint.analyzer import analyze_directory
+backend\a-005\fingerprint\analyzer.py:5: in <module>
+    from .parsers import (
+backend\a-005\fingerprint\parsers.py:14: in <module>
+    NAME_CLEAN_RE = re.compile(r""[^A-Za-z0-9_.\-]++"", re.UNICODE)
+    return _compile(pattern, flags)
+    p = sre_compile.compile(pattern, flags)
+    p = sre_parse.parse(p, flags)
+    p = _parse_sub(source, state, flags & SRE_FLAG_VERBOSE, 0)
+    itemsappend(_parse(source, state, verbose, nested + 1,
+    raise source.error(""multiple repeat"",
+E   re.error: multiple repeat at position 17"
+report_a-006.html	D:\Assemblyline\unified_app\reports\report_a-006.html	PASSED	
+report_a-007.html	D:\Assemblyline\unified_app\reports\report_a-007.html	PASSED	
+report_a-008.html	D:\Assemblyline\unified_app\reports\report_a-008.html	PASSED	
+report_a-009.html	D:\Assemblyline\unified_app\reports\report_a-009.html	FAILED	"backend\a-009\test_smoke_a-009.py:9: in test_module_imports
+    import app
+backend\a-009\app.py:5: in <module>
+    from gap_analyzer.detector import detect_from_repo_files, detect_from_repo_path
+backend\a-009\gap_analyzer\detector.py:16: in <module>
+    ANNOTATION_ARG_RE = re.compile(r""([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*[&#x27;\""]([^&#x27;\""]+)[&#x27;\""])""
+    return _compile(pattern, flags)
+    p = sre_compile.compile(pattern, flags)
+    p = sre_parse.parse(p, flags)
+    raise source.error(""unbalanced parenthesis"")
+E   re.error: unbalanced parenthesis at position 50"
+report_a-010.html	D:\Assemblyline\unified_app\reports\report_a-010.html	PASSED	
+report_a-011.html	D:\Assemblyline\unified_app\reports\report_a-011.html	PASSED	
+report_a-012.html	D:\Assemblyline\unified_app\reports\report_a-012.html	PASSED	
+report_a-013.html	D:\Assemblyline\unified_app\reports\report_a-013.html	PASSED	
+report_a-014.html	D:\Assemblyline\unified_app\reports\report_a-014.html	PASSED	
+report_a-015.html	D:\Assemblyline\unified_app\reports\report_a-015.html	PASSED	
+report_a-016.html	D:\Assemblyline\unified_app\reports\report_a-016.html	PASSED	
+report_a-017.html	D:\Assemblyline\unified_app\reports\report_a-017.html	PASSED	
+report_a-018.html	D:\Assemblyline\unified_app\reports\report_a-018.html	PASSED	
+report_a-019.html	D:\Assemblyline\unified_app\reports\report_a-019.html	PASSED	
+report_a-020.html	D:\Assemblyline\unified_app\reports\report_a-020.html	PASSED	
+report_a-021.html	D:\Assemblyline\unified_app\reports\report_a-021.html	FAILED	"def test_health():
+>       app = create_app({""TESTING"": True})
+E       TypeError: create_app() takes 0 positional arguments but 1 was given
+
+backend\a-021\tests_a-021\test_suggest.py:12: TypeError"
+report_a-022.html	D:\Assemblyline\unified_app\reports\report_a-022.html	PASSED	
+report_a-023.html	D:\Assemblyline\unified_app\reports\report_a-023.html	FAILED	"backend\a-023\test_smoke_a-023.py:9: in test_module_imports
+    import app
+backend\a-023\app.py:3: in <module>
+    from routes import bp
+backend\a-023\routes.py:7: in <module>
+    from models import Project, AuditEvent
+backend\a-023\models.py:14: in <module>
+    class AuditEvent(Base):
+    _as_declarative(reg, cls, dict_)
+    return _MapperConfig.setup_mapping(registry, cls, dict_, None, {})
+    return _ClassScanMapperConfig(
+    self._extract_mappable_attributes()
+    raise exc.InvalidRequestError(
+E   sqlalchemy.exc.InvalidRequestError: Attribute name &#x27;metadata&#x27; is reserved when using the Declarative API."
+report_a-024.html	D:\Assemblyline\unified_app\reports\report_a-024.html	PASSED	
+report_a-025.html	D:\Assemblyline\unified_app\reports\report_a-025.html	FAILED	"backend\a-025\test_smoke_a-025.py:9: in test_module_imports
+    import app
+backend\a-025\app.py:5: in <module>
+    from models import Project, Snapshot, Checkpoint, AuditLog
+backend\a-025\models.py:36: in <module>
+    class Snapshot(db.Model):
+backend\a-025\models.py:48: in Snapshot
+    UniqueConstraint(&#x27;project_id&#x27;, &#x27;label&#x27;, &#x27;is_bookmark&#x27;, name=&#x27;uq_project_bookmark_label&#x27;, sqlite_where=(db.text(&#x27;is_bookmark = 1&#x27;))),
+    Constraint.__init__(
+    self._validate_dialect_kwargs(dialect_kw)
+    raise exc.ArgumentError(
+E   sqlalchemy.exc.ArgumentError: Argument &#x27;sqlite_where&#x27; is not accepted by dialect &#x27;sqlite&#x27; on behalf of <class &#x27;sqlalchemy.sql.schema.UniqueConstraint&#x27;>"
+report_a-026.html	D:\Assemblyline\unified_app\reports\report_a-026.html	PASSED	
+report_a-027.html	D:\Assemblyline\unified_app\reports\report_a-027.html	PASSED	
+report_a-028.html	D:\Assemblyline\unified_app\reports\report_a-028.html	PASSED	
+report_a-029.html	D:\Assemblyline\unified_app\reports\report_a-029.html	PASSED	
+report_a-030.html	D:\Assemblyline\unified_app\reports\report_a-030.html	FAILED	"backend\a-030\test_smoke_a-030.py:9: in test_module_imports
+    import app
+backend\a-030\app.py:15: in <module>
+    issue_service = IssueCreationService(cfg, issue_registry)
+backend\a-030\services\issue_service.py:17: in __init__
+    self.tracker = self._init_tracker(cfg)
+backend\a-030\services\issue_service.py:27: in _init_tracker
+    raise ValueError(""Unsupported or missing TRACKER_PROVIDER. Use one of: github, gitlab, jira"")
+E   ValueError: Unsupported or missing TRACKER_PROVIDER. Use one of: github, gitlab, jira"
+report_a-031.html	D:\Assemblyline\unified_app\reports\report_a-031.html	PASSED	
+report_a-032.html	D:\Assemblyline\unified_app\reports\report_a-032.html	PASSED	
+report_a-033.html	D:\Assemblyline\unified_app\reports\report_a-033.html	PASSED	
+report_a-034.html	D:\Assemblyline\unified_app\reports\report_a-034.html	PASSED	
+report_a-035.html	D:\Assemblyline\unified_app\reports\report_a-035.html	PASSED	
+report_a-036.html	D:\Assemblyline\unified_app\reports\report_a-036.html	PASSED	
+report_a-037.html	D:\Assemblyline\unified_app\reports\report_a-037.html	PASSED	
+report_a-038.html	D:\Assemblyline\unified_app\reports\report_a-038.html	PASSED	
+report_a-039.html	D:\Assemblyline\unified_app\reports\report_a-039.html	PASSED	
+report_a-040.html	D:\Assemblyline\unified_app\reports\report_a-040.html	PASSED	
+report_a-041.html	D:\Assemblyline\unified_app\reports\report_a-041.html	PASSED	
+report_a-042.html	D:\Assemblyline\unified_app\reports\report_a-042.html	PASSED	
+report_a-043.html	D:\Assemblyline\unified_app\reports\report_a-043.html	PASSED	
+report_a-044.html	D:\Assemblyline\unified_app\reports\report_a-044.html	PASSED	
+report_a-045.html	D:\Assemblyline\unified_app\reports\report_a-045.html	FAILED	"backend\a-045\test_smoke_a-045.py:9: in test_module_imports
+    import app
+backend\a-045\app.py:15: in <module>
+    from models import Project
+backend\a-045\models.py:6: in <module>
+    class Project(db.Model):
+    super().__init__(name, bases, d, **kwargs)
+    super().__init__(name, bases, d, **kwargs)
+    _as_declarative(reg, cls, dict_)
+    return _MapperConfig.setup_mapping(registry, cls, dict_, None, {})
+    return _ClassScanMapperConfig(
+    self._extract_mappable_attributes()
+    raise exc.InvalidRequestError(
+E   sqlalchemy.exc.InvalidRequestError: Attribute name &#x27;metadata&#x27; is reserved when using the Declarative API."
+report_b-001.html	D:\Assemblyline\unified_app\reports\report_b-001.html	PASSED	
+report_b-002.html	D:\Assemblyline\unified_app\reports\report_b-002.html	PASSED	
+report_b-003.html	D:\Assemblyline\unified_app\reports\report_b-003.html	PASSED	
+report_b-004.html	D:\Assemblyline\unified_app\reports\report_b-004.html	PASSED	
+report_b-005.html	D:\Assemblyline\unified_app\reports\report_b-005.html	PASSED	
+report_b-006.html	D:\Assemblyline\unified_app\reports\report_b-006.html	PASSED	
+report_b-007.html	D:\Assemblyline\unified_app\reports\report_b-007.html	PASSED	
+report_b-008.html	D:\Assemblyline\unified_app\reports\report_b-008.html	PASSED	
+report_b-009.html	D:\Assemblyline\unified_app\reports\report_b-009.html	PASSED	
+report_b-010.html	D:\Assemblyline\unified_app\reports\report_b-010.html	PASSED	
+report_b-011.html	D:\Assemblyline\unified_app\reports\report_b-011.html	PASSED	
+report_b-012.html	D:\Assemblyline\unified_app\reports\report_b-012.html	PASSED	
+report_b-013.html	D:\Assemblyline\unified_app\reports\report_b-013.html	PASSED	
+report_b-014.html	D:\Assemblyline\unified_app\reports\report_b-014.html	FAILED	"backend\b-014\tests_b-014\test_app_tests_b-014.py:19: in test_index
+    data = json.loads(response.data)
+    return _default_decoder.decode(s)
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+    raise JSONDecodeError(""Expecting value"", s, err.value) from None
+E   json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+report_b-015.html	D:\Assemblyline\unified_app\reports\report_b-015.html	PASSED	
+report_b-016.html	D:\Assemblyline\unified_app\reports\report_b-016.html	FAILED	"backend\b-016\tests_b-016\test_app_tests_b-016.py:20: in test_index_page
+    assert b&#x27;User Personas&#x27; in response.data
+E   assert b&#x27;User Personas&#x27; in b&#x27;{""endpoints"":[{""description"":""Generate user personas and realistic user journeys"",""method"":""POST"",""path"":""/api/generate""}],""service"":""generate-user-personas-and-realistic-user-journeys"",""version"":""1.0.0""}
+&#x27;
+E    +  where b&#x27;{""endpoints"":[{""description"":""Generate user personas and realistic user journeys"",""method"":""POST"",""path"":""/api/generate""}],""service"":""generate-user-personas-and-realistic-user-journeys"",""version"":""1.0.0""}
+&#x27; = <WrapperTestResponse 205 bytes [200 OK]>.data"
+report_b-017.html	D:\Assemblyline\unified_app\reports\report_b-017.html	FAILED	"backend\b-017\tests_b-017\test_app_tests_b-017.py:21: in test_home_route
+    assert data[&#x27;message&#x27;] == &#x27;Hello, World!&#x27;
+E   KeyError: &#x27;message&#x27;"
+report_b-018.html	D:\Assemblyline\unified_app\reports\report_b-018.html	PASSED	
+report_b-019.html	D:\Assemblyline\unified_app\reports\report_b-019.html	PASSED	
+report_b-020.html	D:\Assemblyline\unified_app\reports\report_b-020.html	PASSED	
+report_b-021.html	D:\Assemblyline\unified_app\reports\report_b-021.html	FAILED	"backend\b-021\tests_b-021\test_app_tests_b-021.py:42: in test_add_idea
+    assert response.status_code == 201
+E   assert 400 == 201
+E    +  where 400 = <WrapperTestResponse streamed [400 BAD REQUEST]>.status_code"
+report_b-022.html	D:\Assemblyline\unified_app\reports\report_b-022.html	PASSED	
+report_b-023.html	D:\Assemblyline\unified_app\reports\report_b-023.html	PASSED	
+report_b-024.html	D:\Assemblyline\unified_app\reports\report_b-024.html	FAILED	"backend\b-024\tests_b-024\test_app_tests_b-024.py:43: in test_generate_erd
+    data = json.loads(response.data)
+    return _default_decoder.decode(s)
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+    raise JSONDecodeError(""Expecting value"", s, err.value) from None
+E   json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+report_b-025.html	D:\Assemblyline\unified_app\reports\report_b-025.html	FAILED	"backend\b-025\tests_b-025\test_app_tests_b-025.py:27: in test_home
+    data = json.loads(response.data)
+    return _default_decoder.decode(s)
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+    raise JSONDecodeError(""Expecting value"", s, err.value) from None
+E   json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+report_b-026.html	D:\Assemblyline\unified_app\reports\report_b-026.html	PASSED	
+report_b-027.html	D:\Assemblyline\unified_app\reports\report_b-027.html	PASSED	
+report_b-028.html	D:\Assemblyline\unified_app\reports\report_b-028.html	FAILED	"backend\b-028\tests_b-028\test_app_tests_b-028.py:21: in test_health_endpoint
+    data = json.loads(response.data)
+    return _default_decoder.decode(s)
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+    raise JSONDecodeError(""Expecting value"", s, err.value) from None
+E   json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+report_b-029.html	D:\Assemblyline\unified_app\reports\report_b-029.html	PASSED	
+report_b-030.html	D:\Assemblyline\unified_app\reports\report_b-030.html	FAILED	"backend\b-030\tests_b-030\test_app_tests_b-030.py:19: in test_home
+    data = json.loads(response.data)
+    return _default_decoder.decode(s)
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+    raise JSONDecodeError(""Expecting value"", s, err.value) from None
+E   json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+report_b-031.html	D:\Assemblyline\unified_app\reports\report_b-031.html	FAILED	"backend\b-031\test_smoke_b-031.py:26: in test_no_syntax_errors
+    ast.parse(py_file.read_text())
+    return f.read()
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+E   UnicodeDecodeError: &#x27;charmap&#x27; codec can&#x27;t decode byte 0x90 in position 2132: character maps to <undefined>"
+report_b-032.html	D:\Assemblyline\unified_app\reports\report_b-032.html	PASSED	
+report_b-033.html	D:\Assemblyline\unified_app\reports\report_b-033.html	FAILED	"backend\b-033\tests_b-033\test_app_tests_b-033.py:22: in test_home
+    assert b&#x27;Designer-friendly exports API&#x27; in response.data
+E   assert b&#x27;Designer-friendly exports API&#x27; in b&#x27;<!doctype html>
+<html lang=""en"">
+<head>
+  <meta charset=""utf-8"" />
+  <meta name=""viewport"" content=""width=device...ents and effects may be omitted.</small>
+  </footer>
+
+  <script src=""/static/main.js""></script>
+</body>
+</html>
+&#x27;
+E    +  where b&#x27;<!doctype html>
+<html lang=""en"">
+<head>
+  <meta charset=""utf-8"" />
+  <meta name=""viewport"" content=""width=device...ents and effects may be omitted.</small>
+  </footer>
+
+  <script src=""/static/main.js""></script>
+</body>
+</html>
+&#x27; = <WrapperTestResponse 2450 bytes [200 OK]>.data"
+report_b-034.html	D:\Assemblyline\unified_app\reports\report_b-034.html	FAILED	"backend\b-034\tests_b-034\test_app_tests_b-034.py:22: in test_index
+    assert b&#x27;Feature Dependency Graph API&#x27; in response.data
+E   assert b&#x27;Feature Dependency Graph API&#x27; in b&#x27;<!doctype html>
+<html lang=""en"">
+<head>
+  <meta charset=""utf-8"">
+  <meta name=""viewport"" content=""width=device-w...l id=""feature-list""></ul>
+    </section>
+  </div>
+
+  <script src=""/static/js/app.js""></script>
+</body>
+</html>
+&#x27;
+E    +  where b&#x27;<!doctype html>
+<html lang=""en"">
+<head>
+  <meta charset=""utf-8"">
+  <meta name=""viewport"" content=""width=device-w...l id=""feature-list""></ul>
+    </section>
+  </div>
+
+  <script src=""/static/js/app.js""></script>
+</body>
+</html>
+&#x27; = <WrapperTestResponse 1962 bytes [200 OK]>.data"
+report_b-035.html	D:\Assemblyline\unified_app\reports\report_b-035.html	FAILED	"backend\b-035\tests_b-035\test_app_tests_b-035.py:25: in test_index
+    data = json.loads(response.data)
+    return _default_decoder.decode(s)
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+    raise JSONDecodeError(""Expecting value"", s, err.value) from None
+E   json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+report_b-036.html	D:\Assemblyline\unified_app\reports\report_b-036.html	PASSED	
+report_b-037.html	D:\Assemblyline\unified_app\reports\report_b-037.html	FAILED	"backend\b-037\tests_b-037\test_app_tests_b-037.py:18: in test_home
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code"
+report_b-038.html	D:\Assemblyline\unified_app\reports\report_b-038.html	FAILED	"backend\b-038\tests_b-038\test_app_tests_b-038.py:22: in test_index
+    assert b&#x27;Learning Path Generator API&#x27; in response.data
+E   assert b&#x27;Learning Path Generator API&#x27; in b&#x27;<!doctype html>
+<html lang=""en"">
+<head>
+  <meta charset=""utf-8"">
+  <meta name=""viewport"" content=""width=device-w...    <p>Generated locally. Curated resources + search links. No API keys required.</p>
+  </footer>
+</body>
+</html>
+&#x27;
+E    +  where b&#x27;<!doctype html>
+<html lang=""en"">
+<head>
+  <meta charset=""utf-8"">
+  <meta name=""viewport"" content=""width=device-w...    <p>Generated locally. Curated resources + search links. No API keys required.</p>
+  </footer>
+</body>
+</html>
+&#x27; = <WrapperTestResponse 2238 bytes [200 OK]>.data"
+report_b-039.html	D:\Assemblyline\unified_app\reports\report_b-039.html	PASSED	
+report_b-040.html	D:\Assemblyline\unified_app\reports\report_b-040.html	PASSED	
+report_b-041.html	D:\Assemblyline\unified_app\reports\report_b-041.html	FAILED	"backend\b-041\tests_b-041\test_app_tests_b-041.py:23: in test_home
+    assert &#x27;message&#x27; in data
+E   TypeError: argument of type &#x27;NoneType&#x27; is not iterable"
+report_b-042.html	D:\Assemblyline\unified_app\reports\report_b-042.html	PASSED	
+report_b-043.html	D:\Assemblyline\unified_app\reports\report_b-043.html	FAILED	"backend\b-043\tests_b-043\test_app_tests_b-043.py:24: in test_flow_progression
+    with client.session_transaction() as sess:
+    return next(self.gen)
+    raise RuntimeError(""Session backend did not open a session."")
+E   RuntimeError: Session backend did not open a session."
+report_b-044.html	D:\Assemblyline\unified_app\reports\report_b-044.html	PASSED	
+report_b-045.html	D:\Assemblyline\unified_app\reports\report_b-045.html	FAILED	"client = <FlaskClient <Flask &#x27;local_app&#x27;>>
+
+    def test_home(client):
+        response = client.get(&#x27;/&#x27;)
+        assert response.status_code == 200
+>       data = json.loads(response.data)
+
+backend\b-045\tests_b-045\test_app_tests_b-045.py:19: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+    return _default_decoder.decode(s)
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <json.decoder.JSONDecoder object at 0x000001ED4E9E6CE0>
+s = &#x27;<!doctype html>
+<html lang=""en"">
+<head>
+  <meta charset=""utf-8"" />
+  <meta name=""viewport"" content=""width=device-... No data leaves your browser.</small>
+  </footer>
+  <script src=""/static/js/wizard.js""></script>
+</body>
+</html>
+&#x27;
+idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """"""Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """"""
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError(""Expecting value"", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+report_c-001.html	D:\Assemblyline\unified_app\reports\report_c-001.html	FAILED	"backend\c-001\tests_c-001\test_app_tests_c-001.py:18: in test_home
+    assert response.json == {&#x27;message&#x27;: &#x27;Hello, World!&#x27;}
+E   AssertionError: assert None == {&#x27;message&#x27;: &#x27;Hello, World!&#x27;}
+E    +  where None = <WrapperTestResponse streamed [200 OK]>.json"
+report_c-002.html	D:\Assemblyline\unified_app\reports\report_c-002.html	FAILED	"client = <FlaskClient <Flask &#x27;app&#x27;>>
+
+    @pytest.mark.acceptance
+    def test_todo_workflow_happy_path(client):
+        # List should be empty initially
+        res = client.get(""/todos"")
+>       assert res.status_code == 200
+E       assert 308 == 200
+E        +  where 308 = <WrapperTestResponse streamed [308 PERMANENT REDIRECT]>.status_code
+
+backend\c-002\tests_c-002\acceptance\test_todos_acceptance.py:8: AssertionError"
+report_c-003.html	D:\Assemblyline\unified_app\reports\report_c-003.html	PASSED	
+report_c-004.html	D:\Assemblyline\unified_app\reports\report_c-004.html	FAILED	"backend\c-004\tests_c-004\test_app_tests_c-004.py:20: in test_index
+    assert &#x27;message&#x27; in data
+E   assert &#x27;message&#x27; in {&#x27;description&#x27;: &#x27;Frontend scaffolds (Vite/React, Next.js, Svelte, Angular)&#x27;, &#x27;frameworks&#x27;: [{&#x27;id&#x27;: &#x27;vite-react&#x27;, &#x27;labe...te&#x27;, &#x27;angular&#x27;], &#x27;query&#x27;: {&#x27;description&#x27;: &#x27;Optional project description&#x27;, &#x27;name&#x27;: ""Project name (default: &#x27;My App&#x27;)""}}}"
+report_c-005.html	D:\Assemblyline\unified_app\reports\report_c-005.html	FAILED	"backend\c-005\tests_c-005\test_app_tests_c-005.py:34: in test_get_scaffold_react_native
+    data = json.loads(response.data)
+    return _default_decoder.decode(s)
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+    raise JSONDecodeError(""Expecting value"", s, err.value) from None
+E   json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+report_c-006.html	D:\Assemblyline\unified_app\reports\report_c-006.html	PASSED	
+report_c-007.html	D:\Assemblyline\unified_app\reports\report_c-007.html	PASSED	
+report_c-008.html	D:\Assemblyline\unified_app\reports\report_c-008.html	PASSED	
+report_c-009.html	D:\Assemblyline\unified_app\reports\report_c-009.html	FAILED	"client = <FlaskClient <Flask &#x27;local_app&#x27;>>
+
+    def test_get_user_by_id(client):
+        """"""Test getting a specific user by ID""""""
+        response = client.get(&#x27;/users/1&#x27;)
+        assert response.status_code == 200
+>       data = json.loads(response.data)
+
+backend\c-009\tests_c-009\test_app_tests_c-009.py:42: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+    return _default_decoder.decode(s)
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <json.decoder.JSONDecoder object at 0x0000017911126CE0>
+s = &#x27;Auto-generated stub for /users/1&#x27;, idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """"""Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """"""
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError(""Expecting value"", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+report_c-010.html	D:\Assemblyline\unified_app\reports\report_c-010.html	PASSED	
+report_c-011.html	D:\Assemblyline\unified_app\reports\report_c-011.html	PASSED	
+report_c-012.html	D:\Assemblyline\unified_app\reports\report_c-012.html	PASSED	
+report_c-013.html	D:\Assemblyline\unified_app\reports\report_c-013.html	FAILED	"def test_healthz():
+        app = create_app()
+        client = app.test_client()
+        res = client.get(""/healthz"")
+        assert res.status_code == 200
+>       assert res.get_json() == {""status"": ""ok""}
+E       AssertionError: assert None == {&#x27;status&#x27;: &#x27;ok&#x27;}
+E        +  where None = get_json()
+E        +    where get_json = <WrapperTestResponse streamed [200 OK]>.get_json
+
+backend\c-013\tests_c-013\test_app_tests_c-013.py:17: AssertionError"
+report_c-014.html	D:\Assemblyline\unified_app\reports\report_c-014.html	PASSED	
+report_c-015.html	D:\Assemblyline\unified_app\reports\report_c-015.html	PASSED	
+report_c-016.html	D:\Assemblyline\unified_app\reports\report_c-016.html	PASSED	
+report_c-017.html	D:\Assemblyline\unified_app\reports\report_c-017.html	FAILED	"backend\c-017\tests_c-017\test_app_tests_c-017.py:23: in test_login_success
+    response = client.post(&#x27;/auth/login&#x27;,
+    return self.open(*args, **kw)
+    response = super().open(
+    response_parts = self.run_wsgi_app(request.environ, buffered=buffered)
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+    app_rv = app(environ, start_response)
+    return self.wsgi_app(environ, start_response)
+    response = self.handle_exception(e)
+    response = self.full_dispatch_request()
+    rv = self.handle_user_exception(e)
+    rv = self.dispatch_request()
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+backend\c-017\app.py:80: in login
+    token = jwt.encode({
+E   AttributeError: module &#x27;jwt&#x27; has no attribute &#x27;encode&#x27;"
+report_c-018.html	D:\Assemblyline\unified_app\reports\report_c-018.html	PASSED	
+report_c-019.html	D:\Assemblyline\unified_app\reports\report_c-019.html	PASSED	
+report_c-020.html	D:\Assemblyline\unified_app\reports\report_c-020.html	FAILED	"backend\c-020\tests_c-020\test_app_tests_c-020.py:18: in test_index
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code"
+report_c-021.html	D:\Assemblyline\unified_app\reports\report_c-021.html	PASSED	
+report_c-022.html	D:\Assemblyline\unified_app\reports\report_c-022.html	PASSED	
+report_c-023.html	D:\Assemblyline\unified_app\reports\report_c-023.html	PASSED	
+report_c-024.html	D:\Assemblyline\unified_app\reports\report_c-024.html	FAILED	"backend\c-024\tests_c-024\test_app_tests_c-024.py:21: in test_get_products_pagination
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code"
+report_c-025.html	D:\Assemblyline\unified_app\reports\report_c-025.html	PASSED	
+report_c-026.html	D:\Assemblyline\unified_app\reports\report_c-026.html	PASSED	
+report_c-027.html	D:\Assemblyline\unified_app\reports\report_c-027.html	PASSED	
+report_c-028.html	D:\Assemblyline\unified_app\reports\report_c-028.html	FAILED	"backend\c-028\tests_c-028\test_app_tests_c-028.py:18: in test_index_route
+    assert b&#x27;<!DOCTYPE html>&#x27; in response.data
+E   assert b&#x27;<!DOCTYPE html>&#x27; in b&#x27;
+<!doctype html>
+<html lang=""en"">
+<head>
+  <meta charset=""utf-8"">
+  <meta name=""viewport"" content=""width=device... such as dialogs require JavaScript but core content and forms remain usable.</div>
+  </noscript>
+</body>
+</html>
+&#x27;
+E    +  where b&#x27;
+<!doctype html>
+<html lang=""en"">
+<head>
+  <meta charset=""utf-8"">
+  <meta name=""viewport"" content=""width=device... such as dialogs require JavaScript but core content and forms remain usable.</div>
+  </noscript>
+</body>
+</html>
+&#x27; = <WrapperTestResponse 3865 bytes [200 OK]>.data"
+report_c-029.html	D:\Assemblyline\unified_app\reports\report_c-029.html	PASSED	
+report_c-030.html	D:\Assemblyline\unified_app\reports\report_c-030.html	PASSED	
+report_c-031.html	D:\Assemblyline\unified_app\reports\report_c-031.html	FAILED	"backend\c-031\tests_c-031\test_app_tests_c-031.py:28: in test_user_cannot_delete
+    assert response.status_code == 403
+E   assert 200 == 403
+E    +  where 200 = <WrapperTestResponse streamed [200 OK]>.status_code"
+report_c-032.html	D:\Assemblyline\unified_app\reports\report_c-032.html	PASSED	
+report_c-033.html	D:\Assemblyline\unified_app\reports\report_c-033.html	FAILED	"client = <FlaskClient <Flask &#x27;local_app&#x27;>>
+
+    def test_health_endpoint(client):
+        response = client.get(""/api/health"")
+        assert response.status_code == 200
+>       assert response.json == {""status"": ""ok""}
+E       AssertionError: assert None == {&#x27;status&#x27;: &#x27;ok&#x27;}
+E        +  where None = <WrapperTestResponse streamed [200 OK]>.json
+
+backend\c-033\tests_c-033\test_app_tests_c-033.py:22: AssertionError"
+report_c-034.html	D:\Assemblyline\unified_app\reports\report_c-034.html	PASSED	
+report_c-035.html	D:\Assemblyline\unified_app\reports\report_c-035.html	PASSED	
+report_c-036.html	D:\Assemblyline\unified_app\reports\report_c-036.html	FAILED	"backend\c-036\tests_c-036\test_app_tests_c-036.py:53: in test_v1_single_user
+    assert data[&#x27;user&#x27;][&#x27;id&#x27;] == 1
+E   TypeError: &#x27;NoneType&#x27; object is not subscriptable"
+report_c-037.html	D:\Assemblyline\unified_app\reports\report_c-037.html	PASSED	
+report_c-038.html	D:\Assemblyline\unified_app\reports\report_c-038.html	PASSED	
+report_c-039.html	D:\Assemblyline\unified_app\reports\report_c-039.html	PASSED	
+report_c-040.html	D:\Assemblyline\unified_app\reports\report_c-040.html	PASSED	
+report_c-041.html	D:\Assemblyline\unified_app\reports\report_c-041.html	PASSED	
+report_c-043.html	D:\Assemblyline\unified_app\reports\report_c-043.html	FAILED	"backend\c-043\tests_c-043\test_app_tests_c-043.py:18: in test_home
+    assert response.json[&#x27;status&#x27;] == &#x27;success&#x27;
+E   KeyError: &#x27;status&#x27;"
+report_c-044.html	D:\Assemblyline\unified_app\reports\report_c-044.html	FAILED	"backend\c-044\tests_c-044\test_app_tests_c-044.py:18: in test_index
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code"
+report_c-045.html	D:\Assemblyline\unified_app\reports\report_c-045.html	FAILED	"backend\c-045\tests_c-045\test_app_tests_c-045.py:20: in test_index
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code"
+report_c-046.html	D:\Assemblyline\unified_app\reports\report_c-046.html	PASSED	
+report_c-047.html	D:\Assemblyline\unified_app\reports\report_c-047.html	PASSED	
+report_c-048.html	D:\Assemblyline\unified_app\reports\report_c-048.html	PASSED	
+report_c-049.html	D:\Assemblyline\unified_app\reports\report_c-049.html	FAILED	"client = <FlaskClient <Flask &#x27;local_app&#x27;>>
+
+    def test_index(client):
+        response = client.get(&#x27;/&#x27;)
+>       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code
+
+backend\c-049\tests_c-049\test_app_tests_c-049.py:18: AssertionError"
+report_c-050.html	D:\Assemblyline\unified_app\reports\report_c-050.html	PASSED	
+report_d-001.html	D:\Assemblyline\unified_app\reports\report_d-001.html	FAILED	"client = <FlaskClient <Flask &#x27;local_app&#x27;>>
+
+    def test_index(client):
+        resp = client.get(""/"")
+        assert resp.status_code == 200
+        data = resp.get_json()
+>       assert data[""status""] == ""ok""
+E       KeyError: &#x27;status&#x27;
+
+backend\d-001\tests_d-001\test_app_tests_d-001.py:22: KeyError"
+report_d-002.html	D:\Assemblyline\unified_app\reports\report_d-002.html	PASSED	
+report_d-003.html	D:\Assemblyline\unified_app\reports\report_d-003.html	FAILED	"backend\d-003\tests_d-003\test_app_tests_d-003.py:18: in test_home
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code"
+report_d-004.html	D:\Assemblyline\unified_app\reports\report_d-004.html	FAILED	"backend\d-004\tests_d-004\test_app_tests_d-004.py:17: in test_index
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code"
+report_d-005.html	D:\Assemblyline\unified_app\reports\report_d-005.html	PASSED	
+report_d-006.html	D:\Assemblyline\unified_app\reports\report_d-006.html	PASSED	
+report_d-007.html	D:\Assemblyline\unified_app\reports\report_d-007.html	FAILED	"backend\d-007\tests_d-007\test_app_tests_d-007.py:18: in test_index
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code"
+report_d-008.html	D:\Assemblyline\unified_app\reports\report_d-008.html	PASSED	
+report_d-009.html	D:\Assemblyline\unified_app\reports\report_d-009.html	PASSED	
+report_d-010.html	D:\Assemblyline\unified_app\reports\report_d-010.html	PASSED	
+report_d-011.html	D:\Assemblyline\unified_app\reports\report_d-011.html	FAILED	"backend\d-011\tests_d-011\test_app_tests_d-011.py:27: in test_health
+    assert data[&#x27;status&#x27;] == &#x27;healthy&#x27;
+E   AssertionError: assert &#x27;ok&#x27; == &#x27;healthy&#x27;
+E     
+E     - healthy
+E     + ok"
+report_d-012.html	D:\Assemblyline\unified_app\reports\report_d-012.html	PASSED	
+report_d-013.html	D:\Assemblyline\unified_app\reports\report_d-013.html	PASSED	
+report_d-014.html	D:\Assemblyline\unified_app\reports\report_d-014.html	PASSED	
+    sock = connection.create_connection(
+    raise err
+    sock.connect(sa)
+E   ConnectionRefusedError: [WinError 10061] No connection could be made because the target machine actively refused it
+
+The above exception was the direct cause of the following exception:
+    response = self._make_request(
+    conn.request(
+    self.endheaders()
+    self._send_output(message_body, encode_chunked=encode_chunked)
+    self.send(msg)
+    self.connect()
+    self.sock = self._new_conn()
+    raise NewConnectionError(
+E   urllib3.exceptions.NewConnectionError: <urllib3.connection.HTTPConnection object at 0x000002A060CDC550>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it
+
+The above exception was the direct cause of the following exception:
+    resp = conn.urlopen(
+C:\Users\aarav\AppData... (truncated)"
+report_d-016.html	D:\Assemblyline\unified_app\reports\report_d-016.html	FAILED	"client = <FlaskClient <Flask &#x27;local_app&#x27;>>
+
+    def test_split_tests(client):
+        """"""Test CI job splitting endpoint""""""
+        response = client.get(&#x27;/split/4/0&#x27;)
+        assert response.status_code == 200
+        data = response.json
+>       assert data[&#x27;total_splits&#x27;] == 4
+E       TypeError: &#x27;NoneType&#x27; object is not subscriptable
+
+backend\d-016\tests_d-016\test_app_tests_d-016.py:32: TypeError"
+report_d-017.html	D:\Assemblyline\unified_app\reports\report_d-017.html	PASSED	
+report_d-018.html	D:\Assemblyline\unified_app\reports\report_d-018.html	PASSED	
+report_d-019.html	D:\Assemblyline\unified_app\reports\report_d-019.html	PASSED	
+report_d-020.html	D:\Assemblyline\unified_app\reports\report_d-020.html	PASSED	
+report_d-021.html	D:\Assemblyline\unified_app\reports\report_d-021.html	PASSED	
+report_d-022.html	D:\Assemblyline\unified_app\reports\report_d-022.html	PASSED	
+report_d-023.html	D:\Assemblyline\unified_app\reports\report_d-023.html	FAILED	"backend\d-023\tests_d-023\test_app_tests_d-023.py:23: in test_index
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code"
+report_d-024.html	D:\Assemblyline\unified_app\reports\report_d-024.html	PASSED	
+report_d-026.html	D:\Assemblyline\unified_app\reports\report_d-026.html	PASSED	
+report_d-027.html	D:\Assemblyline\unified_app\reports\report_d-027.html	FAILED	"backend\d-027\tests_d-027\test_app_tests_d-027.py:24: in test_health_check
+    assert response.get_json()[&#x27;status&#x27;] == &#x27;healthy&#x27;
+E   AssertionError: assert &#x27;ok&#x27; == &#x27;healthy&#x27;
+E     
+E     - healthy
+E     + ok"
+report_d-028.html	D:\Assemblyline\unified_app\reports\report_d-028.html	PASSED	
+report_d-029.html	D:\Assemblyline\unified_app\reports\report_d-029.html	FAILED	"backend\d-029\tests_d-029\test_app_tests_d-029.py:39: in test_create_and_get_artifact
+    data = json.loads(response.data)
+    return _default_decoder.decode(s)
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+    raise JSONDecodeError(""Expecting value"", s, err.value) from None
+E   json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+report_d-030.html	D:\Assemblyline\unified_app\reports\report_d-030.html	FAILED	"monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000018841542740>
+
+    @pytest.mark.geo
+    def test_region_endpoint_reflects_geo_env(monkeypatch):
+        region = os.getenv(""GEO_REGION"", ""us-east-1"")
+        monkeypatch.setenv(""GEO_REGION"", region)
+        app = create_app()
+        client = app.test_client()
+    
+        resp = client.get(""/region"")
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data[""region""] == resolve_region(region)
+>       assert data[""greeting""] == REGION_CONFIG[region][""GREETING""]
+E       KeyError: &#x27;greeting&#x27;
+
+backend\d-030\tests_d-030\test_geo.py:24: KeyError"
+report_d-031.html	D:\Assemblyline\unified_app\reports\report_d-031.html	FAILED	"backend\d-031\tests_d-031\test_app_tests_d-031.py:18: in test_index
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code"
+report_d-032.html	D:\Assemblyline\unified_app\reports\report_d-032.html	PASSED	
+report_d-033.html	D:\Assemblyline\unified_app\reports\report_d-033.html	PASSED	
+report_d-034.html	D:\Assemblyline\unified_app\reports\report_d-034.html	FAILED	"backend\d-034\tests_d-034\test_app_tests_d-034.py:39: in test_rollout_status
+    assert data[&#x27;current_stage&#x27;] == &#x27;canary&#x27;
+E   AssertionError: assert &#x27;stage3&#x27; == &#x27;canary&#x27;
+E     
+E     - canary
+E     + stage3"
+report_d-035.html	D:\Assemblyline\unified_app\reports\report_d-035.html	PASSED	
+report_data.html	D:\Assemblyline\unified_app\reports\report_data.html	PASSED	
+report_dev-001.html	D:\Assemblyline\unified_app\reports\report_dev-001.html	PASSED	
+report_dev-002.html	D:\Assemblyline\unified_app\reports\report_dev-002.html	PASSED	
+report_dev-004.html	D:\Assemblyline\unified_app\reports\report_dev-004.html	PASSED	
+report_dev-005.html	D:\Assemblyline\unified_app\reports\report_dev-005.html	PASSED	
+report_e-001.html	D:\Assemblyline\unified_app\reports\report_e-001.html	FAILED	"backend\e-001\tests_e-001\test_app_tests_e-001.py:42: in test_get_module_template
+    assert data[&#x27;module&#x27;] == &#x27;vm&#x27;
+E   TypeError: &#x27;NoneType&#x27; object is not subscriptable"
+report_e-002.html	D:\Assemblyline\unified_app\reports\report_e-002.html	FAILED	"backend\e-002\tests_e-002\test_app_tests_e-002.py:21: in test_index
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code"
+report_e-003.html	D:\Assemblyline\unified_app\reports\report_e-003.html	FAILED	"backend\e-003\tests_e-003\test_app_tests_e-003.py:48: in test_template_crud
+    assert response.status_code == 201
+E   assert 200 == 201
+E    +  where 200 = <WrapperTestResponse streamed [200 OK]>.status_code"
+report_e-004.html	D:\Assemblyline\unified_app\reports\report_e-004.html	FAILED	"backend\e-004\tests_e-004\test_app_tests_e-004.py:20: in test_health_endpoint
+    assert data[&#x27;status&#x27;] == &#x27;healthy&#x27;
+E   AssertionError: assert &#x27;ok&#x27; == &#x27;healthy&#x27;
+E     
+E     - healthy
+E     + ok"
+report_e-005.html	D:\Assemblyline\unified_app\reports\report_e-005.html	FAILED	"backend\e-005\tests_e-005\test_app_tests_e-005.py:39: in test_create_and_get_registry
+    data = json.loads(response.data)
+    return _default_decoder.decode(s)
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+    raise JSONDecodeError(""Expecting value"", s, err.value) from None
+E   json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+report_e-006.html	D:\Assemblyline\unified_app\reports\report_e-006.html	PASSED	
+report_e-007.html	D:\Assemblyline\unified_app\reports\report_e-007.html	FAILED	"backend\e-007\tests_e-007\test_app_tests_e-007.py:54: in test_create_and_scale_nodepool
+    assert response.status_code == 201
+E   assert 200 == 201
+E    +  where 200 = <WrapperTestResponse streamed [200 OK]>.status_code"
+report_e-008.html	D:\Assemblyline\unified_app\reports\report_e-008.html	PASSED	
+report_e-009.html	D:\Assemblyline\unified_app\reports\report_e-009.html	PASSED	
+report_e-010.html	D:\Assemblyline\unified_app\reports\report_e-010.html	PASSED	
+report_e-011.html	D:\Assemblyline\unified_app\reports\report_e-011.html	PASSED	
+report_e-012.html	D:\Assemblyline\unified_app\reports\report_e-012.html	FAILED	"backend\e-012\tests_e-012\test_app_tests_e-012.py:30: in test_get_content
+    data = json.loads(response.data)
+    return _default_decoder.decode(s)
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+    raise JSONDecodeError(""Expecting value"", s, err.value) from None
+E   json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+report_e-013.html	D:\Assemblyline\unified_app\reports\report_e-013.html	PASSED	
+report_e-014.html	D:\Assemblyline\unified_app\reports\report_e-014.html	PASSED	
+report_e-015.html	D:\Assemblyline\unified_app\reports\report_e-015.html	FAILED	"backend\e-015\tests_e-015\test_app_tests_e-015.py:22: in test_index
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code"
+report_e-016.html	D:\Assemblyline\unified_app\reports\report_e-016.html	PASSED	
+report_e-017.html	D:\Assemblyline\unified_app\reports\report_e-017.html	PASSED	
+report_e-018.html	D:\Assemblyline\unified_app\reports\report_e-018.html	PASSED	
+report_e-019.html	D:\Assemblyline\unified_app\reports\report_e-019.html	PASSED	
+report_e-020.html	D:\Assemblyline\unified_app\reports\report_e-020.html	PASSED	
+report_e-021.html	D:\Assemblyline\unified_app\reports\report_e-021.html	FAILED	"backend\e-021\tests_e-021\test_app_tests_e-021.py:19: in test_health
+    assert response.json[""status""] == ""healthy""
+E   AssertionError: assert &#x27;ok&#x27; == &#x27;healthy&#x27;
+E     
+E     - healthy
+E     + ok"
+report_e-022.html	D:\Assemblyline\unified_app\reports\report_e-022.html	PASSED	
+report_e-023.html	D:\Assemblyline\unified_app\reports\report_e-023.html	PASSED	
+    return getattr(thing, comp)
+E   AttributeError: module &#x27;app&#x27; has no attribute &#x27;requests&#x27;
+
+During handling of the above exception, another exception occurred:
+    with self.decoration_helper(patched,
+    return next(self.gen)
+    arg = exit_stack.enter_context(patching)
+    result = _cm_type.__enter__(cm)
+    self.target = self.getter()
+    getter = lambda: _importer(target)
+    thing = _dot_lookup(thing, comp, import_path)
+    __import__(import_path)
+E   ModuleNotFoundError: No module named &#x27;app.requests&#x27;"
+report_e-025.html	D:\Assemblyline\unified_app\reports\report_e-025.html	PASSED	
+report_e-026.html	D:\Assemblyline\unified_app\reports\report_e-026.html	PASSED	
+report_e-027.html	D:\Assemblyline\unified_app\reports\report_e-027.html	PASSED	
+report_e-028.html	D:\Assemblyline\unified_app\reports\report_e-028.html	PASSED	
+report_e-029.html	D:\Assemblyline\unified_app\reports\report_e-029.html	PASSED	
+report_e-030.html	D:\Assemblyline\unified_app\reports\report_e-030.html	PASSED	
+report_e-031.html	D:\Assemblyline\unified_app\reports\report_e-031.html	PASSED	
+report_e-032.html	D:\Assemblyline\unified_app\reports\report_e-032.html	FAILED	"backend\e-032\tests_e-032\test_app_tests_e-032.py:18: in test_index
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code"
+report_e-033.html	D:\Assemblyline\unified_app\reports\report_e-033.html	PASSED	
+report_e-034.html	D:\Assemblyline\unified_app\reports\report_e-034.html	FAILED	"backend\e-034\tests_e-034\test_app_tests_e-034.py:20: in test_index
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code"
+report_e-035.html	D:\Assemblyline\unified_app\reports\report_e-035.html	PASSED	
+report_e-036.html	D:\Assemblyline\unified_app\reports\report_e-036.html	FAILED	"backend\e-036\tests_e-036\test_app_tests_e-036.py:42: in test_provision_domain
+    data = json.loads(response.data)
+    return _default_decoder.decode(s)
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+    raise JSONDecodeError(""Expecting value"", s, err.value) from None
+E   json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+report_e-037.html	D:\Assemblyline\unified_app\reports\report_e-037.html	FAILED	"backend\e-037\tests_e-037\test_app_tests_e-037.py:18: in test_index
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code"
+report_e-038.html	D:\Assemblyline\unified_app\reports\report_e-038.html	FAILED	"client = <FlaskClient <Flask &#x27;local_app&#x27;>>
+
+    def test_get_role_dev(client):
+        response = client.get(&#x27;/roles/dev&#x27;)
+        assert response.status_code == 200
+>       data = json.loads(response.data)
+
+backend\e-038\tests_e-038\test_app_tests_e-038.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+    return _default_decoder.decode(s)
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <json.decoder.JSONDecoder object at 0x0000020F2EC26CE0>
+s = &#x27;Auto-generated stub for /roles/dev&#x27;, idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """"""Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """"""
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError(""Expecting value"", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+report_e-039.html	D:\Assemblyline\unified_app\reports\report_e-039.html	PASSED	
+report_e-040.html	D:\Assemblyline\unified_app\reports\report_e-040.html	PASSED	
+report_f-001.html	D:\Assemblyline\unified_app\reports\report_f-001.html	PASSED	
+report_f-002.html	D:\Assemblyline\unified_app\reports\report_f-002.html	FAILED	"backend\f-002\tests_f-002\test_app_tests_f-002.py:18: in test_index
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code"
+report_f-003.html	D:\Assemblyline\unified_app\reports\report_f-003.html	PASSED	
+report_f-004.html	D:\Assemblyline\unified_app\reports\report_f-004.html	PASSED	
+report_f-005.html	D:\Assemblyline\unified_app\reports\report_f-005.html	PASSED	
+report_f-006.html	D:\Assemblyline\unified_app\reports\report_f-006.html	PASSED	
+report_f-007.html	D:\Assemblyline\unified_app\reports\report_f-007.html	PASSED	
+report_f-008.html	D:\Assemblyline\unified_app\reports\report_f-008.html	PASSED	
+report_f-009.html	D:\Assemblyline\unified_app\reports\report_f-009.html	PASSED	
+report_f-010.html	D:\Assemblyline\unified_app\reports\report_f-010.html	FAILED	"backend\f-010\tests_f-010\test_app_tests_f-010.py:18: in test_home
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code"
+report_f-011.html	D:\Assemblyline\unified_app\reports\report_f-011.html	FAILED	"backend\f-011\tests_f-011\test_app_tests_f-011.py:21: in test_index
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code"
+report_f-012.html	D:\Assemblyline\unified_app\reports\report_f-012.html	PASSED	
+report_f-013.html	D:\Assemblyline\unified_app\reports\report_f-013.html	PASSED	
+report_f-014.html	D:\Assemblyline\unified_app\reports\report_f-014.html	PASSED	
+report_f-015.html	D:\Assemblyline\unified_app\reports\report_f-015.html	FAILED	"backend\f-015\tests_f-015\test_app_tests_f-015.py:22: in test_health_check
+    assert data[&#x27;status&#x27;] == &#x27;healthy&#x27;
+E   AssertionError: assert &#x27;ok&#x27; == &#x27;healthy&#x27;
+E     
+E     - healthy
+E     + ok"
+report_f-016.html	D:\Assemblyline\unified_app\reports\report_f-016.html	PASSED	
+report_f-017.html	D:\Assemblyline\unified_app\reports\report_f-017.html	FAILED	"backend\f-017\tests_f-017\test_app_tests_f-017.py:28: in test_get_user
+    assert response.json[&#x27;id&#x27;] == 123
+E   TypeError: &#x27;NoneType&#x27; object is not subscriptable"
+report_f-018.html	D:\Assemblyline\unified_app\reports\report_f-018.html	FAILED	"backend\f-018\tests_f-018\test_app_tests_f-018.py:18: in test_home
+    assert response.status_code == 200
+E   assert 404 == 200
+E    +  where 404 = <WrapperTestResponse streamed [404 NOT FOUND]>.status_code"
+report_f-019.html	D:\Assemblyline\unified_app\reports\report_f-019.html	FAILED	"backend\f-019\tests_f-019\test_app_tests_f-019.py:20: in test_health_endpoint
+    assert data[&#x27;status&#x27;] == &#x27;healthy&#x27;
+E   AssertionError: assert &#x27;ok&#x27; == &#x27;healthy&#x27;
+E     
+E     - healthy
+E     + ok"
+report_f-020.html	D:\Assemblyline\unified_app\reports\report_f-020.html	PASSED	
+report_f-021.html	D:\Assemblyline\unified_app\reports\report_f-021.html	PASSED	
+report_f-022.html	D:\Assemblyline\unified_app\reports\report_f-022.html	PASSED	
+report_f-023.html	D:\Assemblyline\unified_app\reports\report_f-023.html	PASSED	
+report_f-024.html	D:\Assemblyline\unified_app\reports\report_f-024.html	PASSED	
+report_f-025.html	D:\Assemblyline\unified_app\reports\report_f-025.html	PASSED	
+report_g-001.html	D:\Assemblyline\unified_app\reports\report_g-001.html	PASSED	
+report_g-002.html	D:\Assemblyline\unified_app\reports\report_g-002.html	PASSED	
+report_g-003.html	D:\Assemblyline\unified_app\reports\report_g-003.html	PASSED	
+report_g-004.html	D:\Assemblyline\unified_app\reports\report_g-004.html	PASSED	
+report_g-005.html	D:\Assemblyline\unified_app\reports\report_g-005.html	PASSED	
+report_g-006.html	D:\Assemblyline\unified_app\reports\report_g-006.html	PASSED	
+report_g-007.html	D:\Assemblyline\unified_app\reports\report_g-007.html	PASSED	
+report_g-008.html	D:\Assemblyline\unified_app\reports\report_g-008.html	PASSED	
+report_g-009.html	D:\Assemblyline\unified_app\reports\report_g-009.html	PASSED	
+report_g-010.html	D:\Assemblyline\unified_app\reports\report_g-010.html	PASSED	
+report_g-011.html	D:\Assemblyline\unified_app\reports\report_g-011.html	PASSED	
+report_g-012.html	D:\Assemblyline\unified_app\reports\report_g-012.html	PASSED	
+report_g-013.html	D:\Assemblyline\unified_app\reports\report_g-013.html	PASSED	
+report_g-014.html	D:\Assemblyline\unified_app\reports\report_g-014.html	PASSED	
+report_g-015.html	D:\Assemblyline\unified_app\reports\report_g-015.html	PASSED	
+report_g-016.html	D:\Assemblyline\unified_app\reports\report_g-016.html	PASSED	
+report_g-017.html	D:\Assemblyline\unified_app\reports\report_g-017.html	PASSED	
+report_g-018.html	D:\Assemblyline\unified_app\reports\report_g-018.html	PASSED	
+report_g-019.html	D:\Assemblyline\unified_app\reports\report_g-019.html	PASSED	
+report_g-020.html	D:\Assemblyline\unified_app\reports\report_g-020.html	PASSED	
+report_g-021.html	D:\Assemblyline\unified_app\reports\report_g-021.html	PASSED	
+report_g-022.html	D:\Assemblyline\unified_app\reports\report_g-022.html	PASSED	
+report_g-023.html	D:\Assemblyline\unified_app\reports\report_g-023.html	PASSED	
+report_g-024.html	D:\Assemblyline\unified_app\reports\report_g-024.html	PASSED	
+report_g-025.html	D:\Assemblyline\unified_app\reports\report_g-025.html	PASSED	
+report_h-001.html	D:\Assemblyline\unified_app\reports\report_h-001.html	PASSED	
+report_h-002.html	D:\Assemblyline\unified_app\reports\report_h-002.html	PASSED	
+report_h-003.html	D:\Assemblyline\unified_app\reports\report_h-003.html	PASSED	
+report_h-004.html	D:\Assemblyline\unified_app\reports\report_h-004.html	PASSED	
+report_h-005.html	D:\Assemblyline\unified_app\reports\report_h-005.html	PASSED	
+report_h-006.html	D:\Assemblyline\unified_app\reports\report_h-006.html	PASSED	
+report_h-007.html	D:\Assemblyline\unified_app\reports\report_h-007.html	PASSED	
+report_h-008.html	D:\Assemblyline\unified_app\reports\report_h-008.html	PASSED	
+report_h-009.html	D:\Assemblyline\unified_app\reports\report_h-009.html	PASSED	
+report_h-010.html	D:\Assemblyline\unified_app\reports\report_h-010.html	PASSED	
+report_h-011.html	D:\Assemblyline\unified_app\reports\report_h-011.html	PASSED	
+report_h-012.html	D:\Assemblyline\unified_app\reports\report_h-012.html	PASSED	
+report_h-013.html	D:\Assemblyline\unified_app\reports\report_h-013.html	PASSED	
+report_h-014.html	D:\Assemblyline\unified_app\reports\report_h-014.html	PASSED	
+report_h-015.html	D:\Assemblyline\unified_app\reports\report_h-015.html	PASSED	
+report_h-016.html	D:\Assemblyline\unified_app\reports\report_h-016.html	PASSED	
+report_h-017.html	D:\Assemblyline\unified_app\reports\report_h-017.html	PASSED	
+report_h-018.html	D:\Assemblyline\unified_app\reports\report_h-018.html	PASSED	
+report_h-019.html	D:\Assemblyline\unified_app\reports\report_h-019.html	PASSED	
+report_h-020.html	D:\Assemblyline\unified_app\reports\report_h-020.html	PASSED	
+report_i-001.html	D:\Assemblyline\unified_app\reports\report_i-001.html	PASSED	
+report_i-002.html	D:\Assemblyline\unified_app\reports\report_i-002.html	PASSED	
+report_i-003.html	D:\Assemblyline\unified_app\reports\report_i-003.html	PASSED	
+report_i-004.html	D:\Assemblyline\unified_app\reports\report_i-004.html	PASSED	
+report_i-005.html	D:\Assemblyline\unified_app\reports\report_i-005.html	PASSED	
+report_i-006.html	D:\Assemblyline\unified_app\reports\report_i-006.html	PASSED	
+report_i-007.html	D:\Assemblyline\unified_app\reports\report_i-007.html	PASSED	
+report_i-008.html	D:\Assemblyline\unified_app\reports\report_i-008.html	PASSED	
+report_i-009.html	D:\Assemblyline\unified_app\reports\report_i-009.html	PASSED	
+report_i-010.html	D:\Assemblyline\unified_app\reports\report_i-010.html	PASSED	
+report_i-011.html	D:\Assemblyline\unified_app\reports\report_i-011.html	PASSED	
+report_i-012.html	D:\Assemblyline\unified_app\reports\report_i-012.html	PASSED	
+report_i-013.html	D:\Assemblyline\unified_app\reports\report_i-013.html	PASSED	
+report_i-014.html	D:\Assemblyline\unified_app\reports\report_i-014.html	PASSED	
+report_i-015.html	D:\Assemblyline\unified_app\reports\report_i-015.html	PASSED	
+report_i-016.html	D:\Assemblyline\unified_app\reports\report_i-016.html	PASSED	
+report_i-017.html	D:\Assemblyline\unified_app\reports\report_i-017.html	PASSED	
+report_i-018.html	D:\Assemblyline\unified_app\reports\report_i-018.html	PASSED	
+report_i-019.html	D:\Assemblyline\unified_app\reports\report_i-019.html	PASSED	
+report_i-020.html	D:\Assemblyline\unified_app\reports\report_i-020.html	PASSED	
+report_infra-001.html	D:\Assemblyline\unified_app\reports\report_infra-001.html	PASSED	
+report_infra-002.html	D:\Assemblyline\unified_app\reports\report_infra-002.html	PASSED	
+report_infra-003.html	D:\Assemblyline\unified_app\reports\report_infra-003.html	PASSED	
+report_infra-004.html	D:\Assemblyline\unified_app\reports\report_infra-004.html	PASSED	
+report_infra-005.html	D:\Assemblyline\unified_app\reports\report_infra-005.html	PASSED	
+report_infra-006.html	D:\Assemblyline\unified_app\reports\report_infra-006.html	PASSED	
+report_infra-007.html	D:\Assemblyline\unified_app\reports\report_infra-007.html	PASSED	
+report_infra-008.html	D:\Assemblyline\unified_app\reports\report_infra-008.html	PASSED	
+report_infra-009.html	D:\Assemblyline\unified_app\reports\report_infra-009.html	PASSED	
+report_infra-010.html	D:\Assemblyline\unified_app\reports\report_infra-010.html	PASSED	
+report_infra-011.html	D:\Assemblyline\unified_app\reports\report_infra-011.html	PASSED	
+report_infra-012.html	D:\Assemblyline\unified_app\reports\report_infra-012.html	PASSED	
+report_infra-013.html	D:\Assemblyline\unified_app\reports\report_infra-013.html	PASSED	
+report_infra-014.html	D:\Assemblyline\unified_app\reports\report_infra-014.html	PASSED	
+report_infra-015.html	D:\Assemblyline\unified_app\reports\report_infra-015.html	PASSED	
+report_infra-016.html	D:\Assemblyline\unified_app\reports\report_infra-016.html	PASSED	
+report_infra-017.html	D:\Assemblyline\unified_app\reports\report_infra-017.html	PASSED	
+report_infra-018.html	D:\Assemblyline\unified_app\reports\report_infra-018.html	PASSED	
+report_infra-019.html	D:\Assemblyline\unified_app\reports\report_infra-019.html	PASSED	
+report_infra-020.html	D:\Assemblyline\unified_app\reports\report_infra-020.html	FAILED	"frontend\infra-020\test_smoke_infra-020.py:9: in test_module_imports
+    import app
+frontend\infra-020\app.py:5: in <module>
+    from monitoring import DependencyManager
+frontend\infra-020\monitoring.py:169: in <module>
+    def timedelta_seconds(seconds: float) -> datetime.timedelta:
+E   AttributeError: type object &#x27;datetime.datetime&#x27; has no attribute &#x27;timedelta&#x27;"
+report_j-001.html	D:\Assemblyline\unified_app\reports\report_j-001.html	PASSED	
+report_j-002.html	D:\Assemblyline\unified_app\reports\report_j-002.html	PASSED	
+report_j-003.html	D:\Assemblyline\unified_app\reports\report_j-003.html	PASSED	
+report_j-004.html	D:\Assemblyline\unified_app\reports\report_j-004.html	PASSED	
+report_j-005.html	D:\Assemblyline\unified_app\reports\report_j-005.html	PASSED	
+report_j-006.html	D:\Assemblyline\unified_app\reports\report_j-006.html	PASSED	
+report_j-007.html	D:\Assemblyline\unified_app\reports\report_j-007.html	PASSED	
+report_j-008.html	D:\Assemblyline\unified_app\reports\report_j-008.html	PASSED	
+report_j-009.html	D:\Assemblyline\unified_app\reports\report_j-009.html	PASSED	
+report_j-010.html	D:\Assemblyline\unified_app\reports\report_j-010.html	PASSED	
+report_j-011.html	D:\Assemblyline\unified_app\reports\report_j-011.html	PASSED	
+report_j-012.html	D:\Assemblyline\unified_app\reports\report_j-012.html	PASSED	
+report_j-013.html	D:\Assemblyline\unified_app\reports\report_j-013.html	PASSED	
+report_j-014.html	D:\Assemblyline\unified_app\reports\report_j-014.html	PASSED	
+report_j-015.html	D:\Assemblyline\unified_app\reports\report_j-015.html	PASSED	
+report_j-016.html	D:\Assemblyline\unified_app\reports\report_j-016.html	PASSED	
+report_j-017.html	D:\Assemblyline\unified_app\reports\report_j-017.html	PASSED	
+report_j-018.html	D:\Assemblyline\unified_app\reports\report_j-018.html	PASSED	
+report_j-019.html	D:\Assemblyline\unified_app\reports\report_j-019.html	PASSED	
+report_j-020.html	D:\Assemblyline\unified_app\reports\report_j-020.html	PASSED	
+report_k-001.html	D:\Assemblyline\unified_app\reports\report_k-001.html	PASSED	
+report_k-002.html	D:\Assemblyline\unified_app\reports\report_k-002.html	PASSED	
+report_k-003.html	D:\Assemblyline\unified_app\reports\report_k-003.html	PASSED	
+report_k-004.html	D:\Assemblyline\unified_app\reports\report_k-004.html	PASSED	
+report_k-005.html	D:\Assemblyline\unified_app\reports\report_k-005.html	PASSED	
+report_k-006.html	D:\Assemblyline\unified_app\reports\report_k-006.html	PASSED	
+report_k-007.html	D:\Assemblyline\unified_app\reports\report_k-007.html	PASSED	
+report_k-008.html	D:\Assemblyline\unified_app\reports\report_k-008.html	PASSED	
+report_k-009.html	D:\Assemblyline\unified_app\reports\report_k-009.html	PASSED	
+report_k-010.html	D:\Assemblyline\unified_app\reports\report_k-010.html	PASSED	
+report_k-011.html	D:\Assemblyline\unified_app\reports\report_k-011.html	PASSED	
+report_k-012.html	D:\Assemblyline\unified_app\reports\report_k-012.html	PASSED	
+report_k-013.html	D:\Assemblyline\unified_app\reports\report_k-013.html	PASSED	
+report_k-014.html	D:\Assemblyline\unified_app\reports\report_k-014.html	PASSED	
+report_k-015.html	D:\Assemblyline\unified_app\reports\report_k-015.html	PASSED	
+report_k-016.html	D:\Assemblyline\unified_app\reports\report_k-016.html	PASSED	
+report_k-017.html	D:\Assemblyline\unified_app\reports\report_k-017.html	PASSED	
+report_k-018.html	D:\Assemblyline\unified_app\reports\report_k-018.html	PASSED	
+report_k-019.html	D:\Assemblyline\unified_app\reports\report_k-019.html	PASSED	
+report_k-020.html	D:\Assemblyline\unified_app\reports\report_k-020.html	PASSED	
+report_l-001.html	D:\Assemblyline\unified_app\reports\report_l-001.html	PASSED	
+report_l-002.html	D:\Assemblyline\unified_app\reports\report_l-002.html	PASSED	
+report_l-003.html	D:\Assemblyline\unified_app\reports\report_l-003.html	PASSED	
+report_l-004.html	D:\Assemblyline\unified_app\reports\report_l-004.html	PASSED	
+report_l-005.html	D:\Assemblyline\unified_app\reports\report_l-005.html	PASSED	
+report_l-006.html	D:\Assemblyline\unified_app\reports\report_l-006.html	PASSED	
+report_l-007.html	D:\Assemblyline\unified_app\reports\report_l-007.html	PASSED	
+report_l-008.html	D:\Assemblyline\unified_app\reports\report_l-008.html	PASSED	
+report_l-009.html	D:\Assemblyline\unified_app\reports\report_l-009.html	PASSED	
+report_l-010.html	D:\Assemblyline\unified_app\reports\report_l-010.html	PASSED	
+report_m-001.html	D:\Assemblyline\unified_app\reports\report_m-001.html	PASSED	
+report_m-002.html	D:\Assemblyline\unified_app\reports\report_m-002.html	PASSED	
+report_m-003.html	D:\Assemblyline\unified_app\reports\report_m-003.html	PASSED	
+report_m-004.html	D:\Assemblyline\unified_app\reports\report_m-004.html	PASSED	
+report_m-005.html	D:\Assemblyline\unified_app\reports\report_m-005.html	PASSED	
+report_m-006.html	D:\Assemblyline\unified_app\reports\report_m-006.html	PASSED	
+report_m-007.html	D:\Assemblyline\unified_app\reports\report_m-007.html	PASSED	
+report_m-008.html	D:\Assemblyline\unified_app\reports\report_m-008.html	PASSED	
+report_m-009.html	D:\Assemblyline\unified_app\reports\report_m-009.html	PASSED	
+report_m-010.html	D:\Assemblyline\unified_app\reports\report_m-010.html	PASSED	
+report_missing-001.html	D:\Assemblyline\unified_app\reports\report_missing-001.html	PASSED	
+report_missing-002.html	D:\Assemblyline\unified_app\reports\report_missing-002.html	PASSED	
+report_missing-003.html	D:\Assemblyline\unified_app\reports\report_missing-003.html	PASSED	
+report_missing-004.html	D:\Assemblyline\unified_app\reports\report_missing-004.html	PASSED	
+report_missing-005.html	D:\Assemblyline\unified_app\reports\report_missing-005.html	PASSED	
+report_missing-006.html	D:\Assemblyline\unified_app\reports\report_missing-006.html	PASSED	
+report_missing-007.html	D:\Assemblyline\unified_app\reports\report_missing-007.html	PASSED	
+report_missing-008.html	D:\Assemblyline\unified_app\reports\report_missing-008.html	PASSED	
+report_missing-009.html	D:\Assemblyline\unified_app\reports\report_missing-009.html	PASSED	
+report_missing-010.html	D:\Assemblyline\unified_app\reports\report_missing-010.html	PASSED	
+report_missing-011.html	D:\Assemblyline\unified_app\reports\report_missing-011.html	PASSED	
+report_missing-012.html	D:\Assemblyline\unified_app\reports\report_missing-012.html	PASSED	
+report_missing-013.html	D:\Assemblyline\unified_app\reports\report_missing-013.html	PASSED	
+report_missing-014.html	D:\Assemblyline\unified_app\reports\report_missing-014.html	PASSED	
+report_missing-015.html	D:\Assemblyline\unified_app\reports\report_missing-015.html	PASSED	
+report_ops-001.html	D:\Assemblyline\unified_app\reports\report_ops-001.html	PASSED	
+report_ops-002.html	D:\Assemblyline\unified_app\reports\report_ops-002.html	PASSED	
+report_ops-003.html	D:\Assemblyline\unified_app\reports\report_ops-003.html	PASSED	
+report_ops-004.html	D:\Assemblyline\unified_app\reports\report_ops-004.html	PASSED	
+report_ops-005.html	D:\Assemblyline\unified_app\reports\report_ops-005.html	PASSED	
+report_perf-001.html	D:\Assemblyline\unified_app\reports\report_perf-001.html	PASSED	
+report_perf-002.html	D:\Assemblyline\unified_app\reports\report_perf-002.html	PASSED	
+report_perf-003.html	D:\Assemblyline\unified_app\reports\report_perf-003.html	PASSED	
+report_perf-004.html	D:\Assemblyline\unified_app\reports\report_perf-004.html	PASSED	
+report_perf-005.html	D:\Assemblyline\unified_app\reports\report_perf-005.html	PASSED	
+report_prod-001.html	D:\Assemblyline\unified_app\reports\report_prod-001.html	PASSED	
+report_prod-002.html	D:\Assemblyline\unified_app\reports\report_prod-002.html	PASSED	
+report_prod-003.html	D:\Assemblyline\unified_app\reports\report_prod-003.html	PASSED	
+report_prod-004.html	D:\Assemblyline\unified_app\reports\report_prod-004.html	PASSED	
+report_prod-005.html	D:\Assemblyline\unified_app\reports\report_prod-005.html	PASSED	
+report_prod-006.html	D:\Assemblyline\unified_app\reports\report_prod-006.html	PASSED	
+report_prod-007.html	D:\Assemblyline\unified_app\reports\report_prod-007.html	PASSED	
+report_prod-008.html	D:\Assemblyline\unified_app\reports\report_prod-008.html	PASSED	
+report_prod-009.html	D:\Assemblyline\unified_app\reports\report_prod-009.html	PASSED	
+report_prod-010.html	D:\Assemblyline\unified_app\reports\report_prod-010.html	PASSED	
+report_prod-011.html	D:\Assemblyline\unified_app\reports\report_prod-011.html	PASSED	
+report_prod-012.html	D:\Assemblyline\unified_app\reports\report_prod-012.html	FAILED	"infrastructure\prod-012\tests_prod-012\test_metrics.py:13: in test_metrics_endpoint_contains_custom_metrics
+    app_module = importlib.import_module(""app"")
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1050: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1027: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1006: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:688: in _load_unlocked
+    ???
+<frozen importlib._bootstrap_external>:883: in exec_module
+    ???
+<frozen importlib._bootstrap>:241: in _call_with_frames_removed
+    ???
+infrastructure\prod-012\app.py:7: in <module>
+    from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+E   ImportError: cannot import name &#x27;generate_latest&#x27; from &#x27;prometheus_client&#x27; (D:\Assemblyline\unified_app\infrastructure\prod-012\prometheus_client.py)"
+report_prod-013.html	D:\Assemblyline\unified_app\reports\report_prod-013.html	PASSED	
+report_prod-014.html	D:\Assemblyline\unified_app\reports\report_prod-014.html	PASSED	
+report_prod-015.html	D:\Assemblyline\unified_app\reports\report_prod-015.html	PASSED	
+report_prod-016.html	D:\Assemblyline\unified_app\reports\report_prod-016.html	PASSED	
+report_prod-017.html	D:\Assemblyline\unified_app\reports\report_prod-017.html	PASSED	
+report_prod-018.html	D:\Assemblyline\unified_app\reports\report_prod-018.html	PASSED	
+report_prod-019.html	D:\Assemblyline\unified_app\reports\report_prod-019.html	PASSED	
+report_prod-020.html	D:\Assemblyline\unified_app\reports\report_prod-020.html	PASSED	

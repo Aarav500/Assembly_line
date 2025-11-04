@@ -1,0 +1,18 @@
+version: '3.9'
+services:
+  app:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
+      - OPENAI_FORCE_JSON=${OPENAI_FORCE_JSON:-true}
+      - OUTPUT_BASE=${OUTPUT_BASE:-generated}
+      - MAX_FILES=${MAX_FILES:-200}
+      - MAX_TOTAL_BYTES=${MAX_TOTAL_BYTES:-5242880}
+      - PORT=5000
+    volumes:
+      - ./:/app
+      - ./generated:/app/generated
+

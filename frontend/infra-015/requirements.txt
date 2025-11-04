@@ -1,0 +1,6 @@
+Flask==3.0.3
+Jinja2==3.1.4
+
+config
+email_queue
+uuid
