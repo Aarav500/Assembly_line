@@ -1,13 +1,12 @@
-# Create the deployment file with proper formatting
-New-Item -ItemType Directory -Force -Path .github\workflows
 
-# Use here-string with single quotes to prevent variable expansion
-$deployContent = @'
+# Create COMPLETE deploy.yml with ALL features
+$content = @'
 name: Deploy to VM
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   workflow_dispatch:
 
 env:
@@ -20,23 +19,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      #############################################
-      # Step 1: Checkout Code
-      #############################################
       - name: 📦 Checkout Repository
         uses: actions/checkout@v3
 
-      #############################################
-      # Step 2: Create .env from Secret
-      #############################################
       - name: 🔐 Create .env file from secret
         run: |
           echo "${{ secrets.ENV }}" > .env
           echo "✅ .env file created from GitHub secret"
 
-      #############################################
-      # Step 3: Setup SSH Key
-      #############################################
       - name: 🔑 Setup SSH Key
         run: |
           mkdir -p ~/.ssh
@@ -45,16 +35,10 @@ jobs:
           ssh-keyscan -H ${{ env.VM_IP }} >> ~/.ssh/known_hosts
           echo "✅ SSH key configured"
 
-      #############################################
-      # Step 4: Test SSH Connection
-      #############################################
       - name: 🔌 Test SSH Connection
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} "echo '✅ SSH connection successful'"
 
-      #############################################
-      # Step 5: Check if Docker is Installed
-      #############################################
       - name: 🐳 Check Docker Installation
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
@@ -80,9 +64,6 @@ jobs:
             fi
           ENDSSH
 
-      #############################################
-      # Step 6: Create Project Directory
-      #############################################
       - name: 📁 Create Project Directory on VM
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
@@ -90,9 +71,6 @@ jobs:
             echo "✅ Project directory created"
           ENDSSH
 
-      #############################################
-      # Step 7: Copy Files to VM (Excluding venvs)
-      #############################################
       - name: 📤 Copy Files to VM
         run: |
           echo "Copying files to VM..."
@@ -110,17 +88,11 @@ jobs:
             ./ ${{ env.VM_USER }}@${{ env.VM_IP }}:~/${{ env.PROJECT_DIR }}/
           echo "✅ Files copied to VM"
 
-      #############################################
-      # Step 8: Copy .env File
-      #############################################
       - name: 🔐 Copy .env to VM
         run: |
           scp -i ~/.ssh/id_ed25519 .env ${{ env.VM_USER }}@${{ env.VM_IP }}:~/${{ env.PROJECT_DIR }}/.env
           echo "✅ .env file copied to VM"
 
-      #############################################
-      # Step 9: Setup Firewall
-      #############################################
       - name: 🔥 Configure Firewall
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
@@ -134,9 +106,6 @@ jobs:
             echo "✅ Firewall configured"
           ENDSSH
 
-      #############################################
-      # Step 10: Stop Existing Containers
-      #############################################
       - name: 🛑 Stop Existing Services
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
@@ -148,113 +117,168 @@ jobs:
             fi
           ENDSSH
 
-      #############################################
-      # Step 11: Build Docker Images (Creates VEnvs)
-      #############################################
       - name: 🔨 Build Docker Images
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
             cd ~/${{ env.PROJECT_DIR }}
+            echo "=========================================="
             echo "Building Docker images..."
+            echo "=========================================="
             echo "This will:"
-            echo "  - Build backend, frontend, infrastructure images"
-            echo "  - Process all modules"
-            echo "  - Create virtual environments automatically"
+            echo "  ✓ Build backend, frontend, infrastructure images"
+            echo "  ✓ Process all modules (001, 002, etc.)"
+            echo "  ✓ Create virtual environments automatically"
+            echo "  ✓ Detect dependency conflicts"
+            echo "  ✓ Assign modules to compatible venvs"
             echo ""
+            echo "Starting build process..."
             docker-compose build --no-cache
+            echo ""
             echo "✅ Docker images built successfully"
+            echo "=========================================="
           ENDSSH
 
-      #############################################
-      # Step 12: Start All Services
-      #############################################
       - name: 🚀 Start Services
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
             cd ~/${{ env.PROJECT_DIR }}
+            echo "=========================================="
             echo "Starting all services..."
+            echo "=========================================="
             docker-compose up -d
+            echo ""
             echo "✅ All services started"
+            echo "=========================================="
           ENDSSH
 
-      #############################################
-      # Step 13: Wait for Services to Start
-      #############################################
-      - name: ⏳ Wait for Services
+      - name: ⏳ Wait for Services to Initialize
         run: |
-          echo "Waiting 30 seconds for services to start..."
+          echo "Waiting 30 seconds for services to fully start..."
           sleep 30
           echo "✅ Wait complete"
 
-      #############################################
-      # Step 14: Check Container Status
-      #############################################
       - name: 📊 Check Container Status
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
             cd ~/${{ env.PROJECT_DIR }}
+            echo ""
+            echo "=========================================="
             echo "Container Status:"
+            echo "=========================================="
             docker-compose ps
+            echo "=========================================="
           ENDSSH
 
-      #############################################
-      # Step 15: Display VEnv Reports
-      #############################################
-      - name: 📋 Display VEnv Reports
+      - name: 📋 Display Backend VEnv Report
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
             cd ~/${{ env.PROJECT_DIR }}
-            
             if [ -f backend/venv_report.txt ]; then
               echo ""
-              echo "==================================="
-              echo "Backend VEnv Report:"
-              echo "==================================="
-              head -n 20 backend/venv_report.txt
-            fi
-            
-            if [ -f frontend/venv_report.txt ]; then
-              echo ""
-              echo "==================================="
-              echo "Frontend VEnv Report:"
-              echo "==================================="
-              head -n 20 frontend/venv_report.txt
-            fi
-            
-            if [ -f infrastructure/venv_report.txt ]; then
-              echo ""
-              echo "==================================="
-              echo "Infrastructure VEnv Report:"
-              echo "==================================="
-              head -n 20 infrastructure/venv_report.txt
+              echo "=========================================="
+              echo "📦 Backend Virtual Environments:"
+              echo "=========================================="
+              head -n 25 backend/venv_report.txt
+              echo "=========================================="
             fi
           ENDSSH
 
-      #############################################
-      # Step 16: Health Checks
-      #############################################
-      - name: 🏥 Health Checks
+      - name: 📋 Display Frontend VEnv Report
         run: |
-          echo "Running health checks..."
-          
-          # Backend health check
-          echo "Checking backend..."
-          curl -f http://${{ env.VM_IP }}:5000/health || exit 1
-          echo "✅ Backend healthy"
-          
-          # Frontend health check
-          echo "Checking frontend..."
-          curl -f http://${{ env.VM_IP }}:3000/health || exit 1
-          echo "✅ Frontend healthy"
-          
-          # Infrastructure health check
-          echo "Checking infrastructure..."
-          curl -f http://${{ env.VM_IP }}:8080/health || exit 1
-          echo "✅ Infrastructure healthy"
+          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
+            cd ~/${{ env.PROJECT_DIR }}
+            if [ -f frontend/venv_report.txt ]; then
+              echo ""
+              echo "=========================================="
+              echo "📦 Frontend Virtual Environments:"
+              echo "=========================================="
+              head -n 25 frontend/venv_report.txt
+              echo "=========================================="
+            fi
+          ENDSSH
 
-      #############################################
-      # Step 17: Display Access URLs
-      #############################################
+      - name: 📋 Display Infrastructure VEnv Report
+        run: |
+          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
+            cd ~/${{ env.PROJECT_DIR }}
+            if [ -f infrastructure/venv_report.txt ]; then
+              echo ""
+              echo "=========================================="
+              echo "📦 Infrastructure Virtual Environments:"
+              echo "=========================================="
+              head -n 25 infrastructure/venv_report.txt
+              echo "=========================================="
+            fi
+          ENDSSH
+
+      - name: 📊 Display VEnv Summary Statistics
+        run: |
+          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
+            cd ~/${{ env.PROJECT_DIR }}
+            echo ""
+            echo "=========================================="
+            echo "📊 VEnv Summary Statistics:"
+            echo "=========================================="
+            
+            if [ -f backend/venv_mapping.json ]; then
+              backend_modules=$(cat backend/venv_mapping.json | grep -o '"module_venv_map"' | wc -l)
+              backend_venvs=$(cat backend/venv_mapping.json | grep -o '"venv_requirements"' | wc -l)
+              echo "Backend:"
+              echo "  Total Modules: $(cat backend/venv_mapping.json | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d.get('module_venv_map', {})))" 2>/dev/null || echo "N/A")"
+              echo "  Total VEnvs: $(cat backend/venv_mapping.json | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d.get('venv_requirements', {})))" 2>/dev/null || echo "N/A")"
+            fi
+            
+            if [ -f frontend/venv_mapping.json ]; then
+              echo "Frontend:"
+              echo "  Total Modules: $(cat frontend/venv_mapping.json | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d.get('module_venv_map', {})))" 2>/dev/null || echo "N/A")"
+              echo "  Total VEnvs: $(cat frontend/venv_mapping.json | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d.get('venv_requirements', {})))" 2>/dev/null || echo "N/A")"
+            fi
+            
+            if [ -f infrastructure/venv_mapping.json ]; then
+              echo "Infrastructure:"
+              echo "  Total Modules: $(cat infrastructure/venv_mapping.json | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d.get('module_venv_map', {})))" 2>/dev/null || echo "N/A")"
+              echo "  Total VEnvs: $(cat infrastructure/venv_mapping.json | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d.get('venv_requirements', {})))" 2>/dev/null || echo "N/A")"
+            fi
+            
+            echo "=========================================="
+          ENDSSH
+
+      - name: 🏥 Backend Health Check
+        run: |
+          echo "Checking backend health..."
+          response=$(curl -s -f http://${{ env.VM_IP }}:5000/health)
+          echo "$response"
+          if echo "$response" | grep -q "healthy"; then
+            echo "✅ Backend is healthy"
+          else
+            echo "❌ Backend health check failed"
+            exit 1
+          fi
+
+      - name: 🏥 Frontend Health Check
+        run: |
+          echo "Checking frontend health..."
+          response=$(curl -s -f http://${{ env.VM_IP }}:3000/health)
+          echo "$response"
+          if echo "$response" | grep -q "healthy"; then
+            echo "✅ Frontend is healthy"
+          else
+            echo "❌ Frontend health check failed"
+            exit 1
+          fi
+
+      - name: 🏥 Infrastructure Health Check
+        run: |
+          echo "Checking infrastructure health..."
+          response=$(curl -s -f http://${{ env.VM_IP }}:8080/health)
+          echo "$response"
+          if echo "$response" | grep -q "healthy"; then
+            echo "✅ Infrastructure is healthy"
+          else
+            echo "❌ Infrastructure health check failed"
+            exit 1
+          fi
+
       - name: 🌐 Display Access URLs
         run: |
           echo ""
@@ -262,18 +286,19 @@ jobs:
           echo "🎉 Deployment Successful!"
           echo "=========================================="
           echo ""
-          echo "Access your application:"
-          echo "  Frontend:       http://${{ env.VM_IP }}:3000"
-          echo "  Backend:        http://${{ env.VM_IP }}:5000"
-          echo "  Monitoring:     http://${{ env.VM_IP }}:8080"
+          echo "📱 Access your application:"
           echo ""
-          echo "Services running on VM: ${{ env.VM_IP }}"
+          echo "  🌐 Frontend:       http://${{ env.VM_IP }}:3000"
+          echo "  🔧 Backend API:    http://${{ env.VM_IP }}:5000"
+          echo "  📊 Monitoring:     http://${{ env.VM_IP }}:8080"
+          echo ""
+          echo "🖥️  VM IP: ${{ env.VM_IP }}"
+          echo "📁 Project Dir: ~/${{ env.PROJECT_DIR }}"
+          echo ""
+          echo "✅ All services are running and healthy!"
           echo "=========================================="
 
-      #############################################
-      # Step 18: Cleanup Old Docker Resources
-      #############################################
-      - name: 🧹 Cleanup
+      - name: 🧹 Cleanup Old Docker Resources
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
             echo "Cleaning up unused Docker resources..."
@@ -281,25 +306,63 @@ jobs:
             echo "✅ Cleanup complete"
           ENDSSH
 
-      #############################################
-      # Failure Notification
-      #############################################
+      - name: 💾 Display Disk Usage
+        run: |
+          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
+            echo ""
+            echo "=========================================="
+            echo "💾 Disk Usage:"
+            echo "=========================================="
+            df -h | grep -E "Filesystem|/$"
+            echo "=========================================="
+          ENDSSH
+
+      - name: 📝 Display Service Logs Preview
+        run: |
+          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
+            cd ~/${{ env.PROJECT_DIR }}
+            echo ""
+            echo "=========================================="
+            echo "📝 Recent Service Logs (last 10 lines):"
+            echo "=========================================="
+            echo ""
+            echo "Backend logs:"
+            docker-compose logs --tail=10 backend
+            echo ""
+            echo "=========================================="
+          ENDSSH
+
       - name: ❌ Deployment Failed
         if: failure()
         run: |
+          echo ""
           echo "=========================================="
           echo "❌ Deployment Failed!"
           echo "=========================================="
-          echo "Check the logs above for details"
+          echo ""
           echo "Common issues:"
-          echo "  - SSH key not configured"
-          echo "  - ENV secret not set"
-          echo "  - Docker not installed on VM"
-          echo "  - Firewall blocking ports"
+          echo "  1. SSH key not configured correctly"
+          echo "  2. ENV secret not set or invalid"
+          echo "  3. Docker not installed on VM"
+          echo "  4. Firewall blocking ports"
+          echo "  5. Insufficient disk space on VM"
+          echo "  6. Module requirements conflicts"
+          echo ""
+          echo "Check the logs above for details"
           echo "=========================================="
+          echo ""
+          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH' || true
+            cd ~/${{ env.PROJECT_DIR }}
+            echo "Container status:"
+            docker-compose ps
+            echo ""
+            echo "Recent error logs:"
+            docker-compose logs --tail=50
+          ENDSSH
 '@
 
-# Save the file
-$deployContent | Out-File -FilePath .github\workflows\deploy.yml -Encoding UTF8 -NoNewline
+# Save with UTF8 encoding (no BOM)
+[System.IO.File]::WriteAllText("$PWD\.github\workflows\deploy.yml", $content, [System.Text.UTF8Encoding]($false))
 
-Write-Host "✅ deploy.yml created successfully!" -ForegroundColor Green
+Write-Host "✅ Complete deploy.yml created with ALL features!" -ForegroundColor Green
+Write-Host "📊 File size: $((Get-Item .github\workflows\deploy.yml).Length) bytes" -ForegroundColor Cyan
