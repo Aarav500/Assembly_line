@@ -29,10 +29,15 @@ jobs:
       - name: 🔑 Setup SSH Key
         run: |
           mkdir -p ~/.ssh
-          cat << 'EOF' > ~/.ssh/id_ed25519
-          ${{ secrets.SSH_PRIVATE_KEY }}
-          EOF
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
+          # Verify key format
+          if ! ssh-keygen -l -f ~/.ssh/id_ed25519 > /dev/null 2>&1; then
+            echo "❌ SSH key format invalid!"
+            echo "Key preview (first 50 chars):"
+            head -c 50 ~/.ssh/id_ed25519
+            exit 1
+          fi
           ssh-keyscan -H ${{ env.VM_IP }} >> ~/.ssh/known_hosts
           echo "✅ SSH key configured"
 
