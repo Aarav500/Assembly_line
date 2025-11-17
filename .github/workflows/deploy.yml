@@ -21,13 +21,17 @@ jobs:
 
       - name: 🔐 Create .env file from secret
         run: |
-          echo "${{ secrets.ENV }}" > .env
+          cat << 'EOF' > .env
+          ${{ secrets.ENV }}
+          EOF
           echo "✅ .env file created from GitHub secret"
 
       - name: 🔑 Setup SSH Key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          cat << 'EOF' > ~/.ssh/id_ed25519
+          ${{ secrets.SSH_PRIVATE_KEY }}
+          EOF
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H ${{ env.VM_IP }} >> ~/.ssh/known_hosts
           echo "✅ SSH key configured"
