@@ -1,7 +1,9 @@
 version: '3.8'
 
 services:
-  # Backend Service - Per-Module VEnv Support
+  # ============================
+  # Backend Service
+  # ============================
   backend:
     build:
       context: ./backend
@@ -12,20 +14,21 @@ services:
     environment:
       - FLASK_APP=app.py
       - FLASK_ENV=production
-      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      - ENVIRONMENT=production
+      # RDS – provided via .env
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+      # Redis inside this compose
       - REDIS_URL=redis://redis:6379/0
       - SECRET_KEY=${SECRET_KEY}
       - PYTHONUNBUFFERED=1
-      - VM_PUBLIC_IP=140.245.12.100
-      - VM_PRIVATE_IP=10.0.0.168
+      - VM_PUBLIC_IP=${VM_PUBLIC_IP}
+      - VM_PRIVATE_IP=${VM_PRIVATE_IP}
     volumes:
       - ./backend:/app
       - backend_venvs:/app/.venvs
       - backend_data:/app/data
       - backend_logs:/app/logs
     depends_on:
-      db:
-        condition: service_healthy
       redis:
         condition: service_healthy
     restart: unless-stopped
@@ -38,7 +41,9 @@ services:
     networks:
       - app_network
 
-  # Frontend Service - Per-Module VEnv Support
+  # ============================
+  # Frontend Service
+  # ============================
   frontend:
     build:
       context: ./frontend
@@ -48,9 +53,10 @@ services:
       - "3000:3000"
     environment:
       - FLASK_APP=app.py
-      - BACKEND_API_URL=http://140.245.12.100:5000
       - ENVIRONMENT=production
       - PYTHONUNBUFFERED=1
+      # Frontend talks to backend through public IP of EC2
+      - BACKEND_API_URL=http://${VM_PUBLIC_IP}:5000
     volumes:
       - ./frontend:/app
       - frontend_venvs:/app/.venvs
@@ -68,7 +74,10 @@ services:
     networks:
       - app_network
 
-  # Infrastructure Service - Monitoring & Health
+  # ============================
+  # Infrastructure / Monitoring
+  # (infra-* modules from prompts_infra.json)
+  # ============================
   infrastructure:
     build:
       context: ./infrastructure
@@ -78,12 +87,14 @@ services:
       - "8080:8080"
     environment:
       - MONITORING_ENABLED=true
+      - PYTHONUNBUFFERED=1
+      - VM_PUBLIC_IP=${VM_PUBLIC_IP}
+      # Talk to other containers by service name
       - BACKEND_URL=http://backend:5000
       - FRONTEND_URL=http://frontend:3000
-      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      # RDS / Redis
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
       - REDIS_URL=redis://redis:6379/0
-      - PYTHONUNBUFFERED=1
-      - VM_PUBLIC_IP=140.245.12.100
     volumes:
       - ./infrastructure:/app
       - infra_venvs:/app/.venvs
@@ -93,7 +104,6 @@ services:
     depends_on:
       - backend
       - frontend
-      - db
       - redis
     restart: unless-stopped
     healthcheck:
@@ -105,35 +115,9 @@ services:
     networks:
       - app_network
 
-  # PostgreSQL Database (FREE on your VM)
-  db:
-    image: postgres:15-alpine
-    container_name: unified_db
-    environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_INITDB_ARGS=--encoding=UTF-8
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    ports:
-      - "5432:5432"
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    networks:
-      - app_network
-    command: >
-      postgres
-      -c shared_buffers=256MB
-      -c max_connections=200
-
-  # Redis Cache
+  # ============================
+  # Redis (free on your EC2 VM)
+  # ============================
   redis:
     image: redis:7-alpine
     container_name: unified_redis
@@ -151,7 +135,9 @@ services:
       - app_network
     command: redis-server --appendonly yes --maxmemory 256mb
 
+  # ============================
   # Nginx Reverse Proxy
+  # ============================
   nginx:
     image: nginx:alpine
     container_name: unified_nginx
@@ -160,7 +146,8 @@ services:
       - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
+      # SSL folder can be added later if you get certs
+      # - ./nginx/ssl:/etc/nginx/ssl:ro
       - nginx_logs:/var/log/nginx
     depends_on:
       - backend
@@ -180,7 +167,6 @@ volumes:
   infra_venvs:
   infra_data:
   infra_logs:
-  postgres_data:
   redis_data:
   nginx_logs:
 

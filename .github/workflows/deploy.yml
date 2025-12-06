@@ -1,4 +1,4 @@
-name: Deploy to VM
+name: Deploy to AWS VM
 
 on:
   push:
@@ -7,359 +7,113 @@ on:
   workflow_dispatch:
 
 env:
-  VM_IP: 140.245.12.100
-  VM_USER: ubuntu
-  PROJECT_DIR: unified_app
+  VM_IP: 3.229.134.38          # EC2 public IP
+  VM_USER: ubuntu              # change if your AMI uses a different default user
+  PROJECT_DIR: unified_app     # directory on the VM
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📦 Checkout Repository
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: 🔐 Create .env file from secret
+      # Build .env locally from multi-line secret ENV (you will maintain this)
+      - name: Create .env from secret
         run: |
           cat << 'EOF' > .env
           ${{ secrets.ENV }}
           EOF
-          echo "✅ .env file created from GitHub secret"
+          echo "Created .env from secrets.ENV"
 
-      - name: 🔑 Setup SSH Key
+      # Use ENV secret to run init.sql against RDS
+      - name: Run init.sql against RDS
+        env:
+          ENV_CONTENT: ${{ secrets.ENV }}
+        run: |
+          set -e
+          echo "$ENV_CONTENT" > env_for_db.sh
+
+          # export all KEY=VALUE pairs from your ENV secret
+          set -a
+          source env_for_db.sh
+          set +a
+
+          echo "Running init.sql against RDS host: $DB_HOST, db: $DB_NAME"
+
+          docker run --rm -i postgres:15-alpine \
+            sh -c 'PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "${DB_PORT:-5432}" -U "$DB_USER" -d "$DB_NAME"' \
+            < database/init.sql
+
+          echo "init.sql completed"
+
+      - name: Configure SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          # Verify key format
-          if ! ssh-keygen -l -f ~/.ssh/id_ed25519 > /dev/null 2>&1; then
-            echo "❌ SSH key format invalid!"
-            echo "Key preview (first 50 chars):"
-            head -c 50 ~/.ssh/id_ed25519
-            exit 1
-          fi
           ssh-keyscan -H ${{ env.VM_IP }} >> ~/.ssh/known_hosts
-          echo "✅ SSH key configured"
 
-      - name: 🔌 Test SSH Connection
+      - name: Test SSH connection
         run: |
-          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} "echo '✅ SSH connection successful'"
+          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} "echo 'SSH OK'"
 
-      - name: 🐳 Check Docker Installation
+      - name: Copy project files to VM
         run: |
-          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
-            if ! command -v docker &> /dev/null; then
-              echo "❌ Docker not installed. Installing..."
-              curl -fsSL https://get.docker.com -o get-docker.sh
-              sudo sh get-docker.sh
-              sudo usermod -aG docker $USER
-              echo "✅ Docker installed"
-            else
-              echo "✅ Docker already installed"
-              docker --version
-            fi
-            
-            if ! command -v docker-compose &> /dev/null; then
-              echo "❌ Docker Compose not installed. Installing..."
-              sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-              sudo chmod +x /usr/local/bin/docker-compose
-              echo "✅ Docker Compose installed"
-            else
-              echo "✅ Docker Compose already installed"
-              docker-compose --version
-            fi
-          ENDSSH
-
-      - name: 📁 Create Project Directory on VM
-        run: |
-          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
-            mkdir -p ~/${{ env.PROJECT_DIR }}
-            echo "✅ Project directory created"
-          ENDSSH
-
-      - name: 📤 Copy Files to VM
-        run: |
-          echo "Copying files to VM..."
           rsync -avz --delete \
             --exclude='.git' \
             --exclude='.github' \
             --exclude='**/.venvs' \
-            --exclude='**/venv' \
             --exclude='**/__pycache__' \
             --exclude='**/*.pyc' \
             --exclude='**/logs/*' \
             --exclude='**/data/*' \
-            --exclude='.env.local' \
             -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
             ./ ${{ env.VM_USER }}@${{ env.VM_IP }}:~/${{ env.PROJECT_DIR }}/
-          echo "✅ Files copied to VM"
 
-      - name: 🔐 Copy .env to VM
+      - name: Copy .env to VM
         run: |
-          scp -i ~/.ssh/id_ed25519 .env ${{ env.VM_USER }}@${{ env.VM_IP }}:~/${{ env.PROJECT_DIR }}/.env
-          echo "✅ .env file copied to VM"
+          scp -i ~/.ssh/id_ed25519 .env \
+            ${{ env.VM_USER }}@${{ env.VM_IP }}:~/${{ env.PROJECT_DIR }}/.env
 
-      - name: 🔥 Configure Firewall
+      - name: Install Docker & docker-compose on VM (if needed) and deploy
         run: |
-          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
-            echo "Configuring firewall..."
-            sudo ufw allow 22/tcp || true
-            sudo ufw allow 80/tcp || true
-            sudo ufw allow 443/tcp || true
-            sudo ufw allow 3000/tcp || true
-            sudo ufw allow 5000/tcp || true
-            sudo ufw allow 8080/tcp || true
-            echo "✅ Firewall configured"
-          ENDSSH
-
-      - name: 🛑 Stop Existing Services
-        run: |
-          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
+          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << EOF
+            set -e
             cd ~/${{ env.PROJECT_DIR }}
-            if [ -f docker-compose.yml ]; then
-              echo "Stopping existing services..."
-              docker-compose down || true
-              echo "✅ Services stopped"
+
+            if ! command -v docker >/dev/null 2>&1; then
+              echo "Installing Docker..."
+              curl -fsSL https://get.docker.com -o get-docker.sh
+              sudo sh get-docker.sh
             fi
-          ENDSSH
 
-      - name: 🔨 Build Docker Images
-        run: |
-          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
-            cd ~/${{ env.PROJECT_DIR }}
-            echo "=========================================="
-            echo "Building Docker images..."
-            echo "=========================================="
-            echo "This will:"
-            echo "  ✓ Build backend, frontend, infrastructure images"
-            echo "  ✓ Process all modules (001, 002, etc.)"
-            echo "  ✓ Create virtual environments automatically"
-            echo "  ✓ Detect dependency conflicts"
-            echo "  ✓ Assign modules to compatible venvs"
-            echo ""
-            echo "Starting build process..."
-            docker-compose build --no-cache
-            echo ""
-            echo "✅ Docker images built successfully"
-            echo "=========================================="
-          ENDSSH
+            if ! command -v docker-compose >/dev/null 2>&1; then
+              echo "Installing docker-compose..."
+              sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-\$(uname -s)-\$(uname -m)" \
+                -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+            fi
 
-      - name: 🚀 Start Services
-        run: |
-          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
-            cd ~/${{ env.PROJECT_DIR }}
-            echo "=========================================="
-            echo "Starting all services..."
-            echo "=========================================="
+            # Ensure firewall ports (optional – you can also set this in console)
+            if command -v ufw >/dev/null 2>&1; then
+              sudo ufw allow 22/tcp || true
+              sudo ufw allow 80/tcp || true
+              sudo ufw allow 443/tcp || true
+              sudo ufw allow 3000/tcp || true
+              sudo ufw allow 5000/tcp || true
+              sudo ufw allow 8080/tcp || true
+            fi
+
+            echo "Stopping existing containers..."
+            docker-compose down || true
+
+            echo "Building and starting containers..."
+            docker-compose pull || true
+            docker-compose build
             docker-compose up -d
-            echo ""
-            echo "✅ All services started"
-            echo "=========================================="
-          ENDSSH
 
-      - name: ⏳ Wait for Services to Initialize
-        run: |
-          echo "Waiting 30 seconds for services to fully start..."
-          sleep 30
-          echo "✅ Wait complete"
-
-      - name: 📊 Check Container Status
-        run: |
-          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
-            cd ~/${{ env.PROJECT_DIR }}
-            echo ""
-            echo "=========================================="
-            echo "Container Status:"
-            echo "=========================================="
+            echo "Current container status:"
             docker-compose ps
-            echo "=========================================="
-          ENDSSH
-
-      - name: 📋 Display Backend VEnv Report
-        run: |
-          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
-            cd ~/${{ env.PROJECT_DIR }}
-            if [ -f backend/venv_report.txt ]; then
-              echo ""
-              echo "=========================================="
-              echo "📦 Backend Virtual Environments:"
-              echo "=========================================="
-              head -n 25 backend/venv_report.txt
-              echo "=========================================="
-            fi
-          ENDSSH
-
-      - name: 📋 Display Frontend VEnv Report
-        run: |
-          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
-            cd ~/${{ env.PROJECT_DIR }}
-            if [ -f frontend/venv_report.txt ]; then
-              echo ""
-              echo "=========================================="
-              echo "📦 Frontend Virtual Environments:"
-              echo "=========================================="
-              head -n 25 frontend/venv_report.txt
-              echo "=========================================="
-            fi
-          ENDSSH
-
-      - name: 📋 Display Infrastructure VEnv Report
-        run: |
-          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
-            cd ~/${{ env.PROJECT_DIR }}
-            if [ -f infrastructure/venv_report.txt ]; then
-              echo ""
-              echo "=========================================="
-              echo "📦 Infrastructure Virtual Environments:"
-              echo "=========================================="
-              head -n 25 infrastructure/venv_report.txt
-              echo "=========================================="
-            fi
-          ENDSSH
-
-      - name: 📊 Display VEnv Summary Statistics
-        run: |
-          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
-            cd ~/${{ env.PROJECT_DIR }}
-            echo ""
-            echo "=========================================="
-            echo "📊 VEnv Summary Statistics:"
-            echo "=========================================="
-            
-            if [ -f backend/venv_mapping.json ]; then
-              echo "Backend:"
-              echo "  Total Modules: $(cat backend/venv_mapping.json | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d.get('module_venv_map', {})))" 2>/dev/null || echo "N/A")"
-              echo "  Total VEnvs: $(cat backend/venv_mapping.json | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d.get('venv_requirements', {})))" 2>/dev/null || echo "N/A")"
-            fi
-            
-            if [ -f frontend/venv_mapping.json ]; then
-              echo "Frontend:"
-              echo "  Total Modules: $(cat frontend/venv_mapping.json | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d.get('module_venv_map', {})))" 2>/dev/null || echo "N/A")"
-              echo "  Total VEnvs: $(cat frontend/venv_mapping.json | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d.get('venv_requirements', {})))" 2>/dev/null || echo "N/A")"
-            fi
-            
-            if [ -f infrastructure/venv_mapping.json ]; then
-              echo "Infrastructure:"
-              echo "  Total Modules: $(cat infrastructure/venv_mapping.json | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d.get('module_venv_map', {})))" 2>/dev/null || echo "N/A")"
-              echo "  Total VEnvs: $(cat infrastructure/venv_mapping.json | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d.get('venv_requirements', {})))" 2>/dev/null || echo "N/A")"
-            fi
-            
-            echo "=========================================="
-          ENDSSH
-
-      - name: 🏥 Backend Health Check
-        run: |
-          echo "Checking backend health..."
-          response=$(curl -s -f http://${{ env.VM_IP }}:5000/health)
-          echo "$response"
-          if echo "$response" | grep -q "healthy"; then
-            echo "✅ Backend is healthy"
-          else
-            echo "❌ Backend health check failed"
-            exit 1
-          fi
-
-      - name: 🏥 Frontend Health Check
-        run: |
-          echo "Checking frontend health..."
-          response=$(curl -s -f http://${{ env.VM_IP }}:3000/health)
-          echo "$response"
-          if echo "$response" | grep -q "healthy"; then
-            echo "✅ Frontend is healthy"
-          else
-            echo "❌ Frontend health check failed"
-            exit 1
-          fi
-
-      - name: 🏥 Infrastructure Health Check
-        run: |
-          echo "Checking infrastructure health..."
-          response=$(curl -s -f http://${{ env.VM_IP }}:8080/health)
-          echo "$response"
-          if echo "$response" | grep -q "healthy"; then
-            echo "✅ Infrastructure is healthy"
-          else
-            echo "❌ Infrastructure health check failed"
-            exit 1
-          fi
-
-      - name: 🌐 Display Access URLs
-        run: |
-          echo ""
-          echo "=========================================="
-          echo "🎉 Deployment Successful!"
-          echo "=========================================="
-          echo ""
-          echo "📱 Access your application:"
-          echo ""
-          echo "  🌐 Frontend:       http://${{ env.VM_IP }}:3000"
-          echo "  🔧 Backend API:    http://${{ env.VM_IP }}:5000"
-          echo "  📊 Monitoring:     http://${{ env.VM_IP }}:8080"
-          echo ""
-          echo "🖥️  VM IP: ${{ env.VM_IP }}"
-          echo "📁 Project Dir: ~/${{ env.PROJECT_DIR }}"
-          echo ""
-          echo "✅ All services are running and healthy!"
-          echo "=========================================="
-
-      - name: 🧹 Cleanup Old Docker Resources
-        run: |
-          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
-            echo "Cleaning up unused Docker resources..."
-            docker system prune -f
-            echo "✅ Cleanup complete"
-          ENDSSH
-
-      - name: 💾 Display Disk Usage
-        run: |
-          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
-            echo ""
-            echo "=========================================="
-            echo "💾 Disk Usage:"
-            echo "=========================================="
-            df -h | grep -E "Filesystem|/$"
-            echo "=========================================="
-          ENDSSH
-
-      - name: 📝 Display Service Logs Preview
-        run: |
-          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
-            cd ~/${{ env.PROJECT_DIR }}
-            echo ""
-            echo "=========================================="
-            echo "📝 Recent Service Logs (last 10 lines):"
-            echo "=========================================="
-            echo ""
-            echo "Backend logs:"
-            docker-compose logs --tail=10 backend
-            echo ""
-            echo "=========================================="
-          ENDSSH
-
-      - name: ❌ Deployment Failed
-        if: failure()
-        run: |
-          echo ""
-          echo "=========================================="
-          echo "❌ Deployment Failed!"
-          echo "=========================================="
-          echo ""
-          echo "Common issues:"
-          echo "  1. SSH key not configured correctly"
-          echo "  2. ENV secret not set or invalid"
-          echo "  3. Docker not installed on VM"
-          echo "  4. Firewall blocking ports"
-          echo "  5. Insufficient disk space on VM"
-          echo "  6. Module requirements conflicts"
-          echo ""
-          echo "Check the logs above for details"
-          echo "=========================================="
-          echo ""
-          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH' || true
-            cd ~/${{ env.PROJECT_DIR }}
-            echo "Container status:"
-            docker-compose ps
-            echo ""
-            echo "Recent error logs:"
-            docker-compose logs --tail=50
-          ENDSSH
+          EOF
