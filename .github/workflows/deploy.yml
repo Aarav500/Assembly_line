@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
 
 env:
-  VM_IP: 3.229.134.38          # EC2 public IP
-  VM_USER: ubuntu              # change if your AMI uses a different default user
-  PROJECT_DIR: unified_app     # directory on the VM
+  VM_IP: 3.229.134.38        # EC2 public IP
+  VM_USER: ubuntu            # EC2 SSH user
+  PROJECT_DIR: unified_app   # directory on the VM
 
 jobs:
   deploy:
@@ -19,15 +19,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Build .env locally from multi-line secret ENV (you will maintain this)
       - name: Create .env from secret
         run: |
           cat << 'EOF' > .env
           ${{ secrets.ENV }}
           EOF
-          echo "Created .env from secrets.ENV"
 
-      # Use ENV secret to run init.sql against RDS
       - name: Run init.sql against RDS
         env:
           ENV_CONTENT: ${{ secrets.ENV }}
@@ -35,18 +32,24 @@ jobs:
           set -e
           echo "$ENV_CONTENT" > env_for_db.sh
 
-          # export all KEY=VALUE pairs from your ENV secret
+          # Load DB_* variables from ENV secret
           set -a
           source env_for_db.sh
           set +a
 
-          echo "Running init.sql against RDS host: $DB_HOST, db: $DB_NAME"
+          echo "Using DB_HOST=$DB_HOST DB_PORT=${DB_PORT:-5432} DB_NAME=$DB_NAME DB_USER=$DB_USER"
 
-          docker run --rm -i postgres:15-alpine \
-            sh -c 'PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "${DB_PORT:-5432}" -U "$DB_USER" -d "$DB_NAME"' \
-            < database/init.sql
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
 
-          echo "init.sql completed"
+          PGPASSWORD="$DB_PASSWORD" psql \
+            -h "$DB_HOST" \
+            -p "${DB_PORT:-5432}" \
+            -U "$DB_USER" \
+            -d "$DB_NAME" \
+            -f database/init.sql
+
+          echo "init.sql completed successfully"
 
       - name: Configure SSH
         run: |
@@ -59,12 +62,11 @@ jobs:
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} "echo 'SSH OK'"
 
-      - name: Copy project files to VM
+      - name: Sync project to VM
         run: |
-          rsync -avz --delete \
+          rsync -az --delete \
             --exclude='.git' \
             --exclude='.github' \
-            --exclude='**/.venvs' \
             --exclude='**/__pycache__' \
             --exclude='**/*.pyc' \
             --exclude='**/logs/*' \
@@ -77,11 +79,11 @@ jobs:
           scp -i ~/.ssh/id_ed25519 .env \
             ${{ env.VM_USER }}@${{ env.VM_IP }}:~/${{ env.PROJECT_DIR }}/.env
 
-      - name: Install Docker & docker-compose on VM (if needed) and deploy
+      - name: Install Docker & docker-compose on VM and deploy
         run: |
-          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << EOF
+          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
             set -e
-            cd ~/${{ env.PROJECT_DIR }}
+            cd ~/unified_app
 
             if ! command -v docker >/dev/null 2>&1; then
               echo "Installing Docker..."
@@ -89,31 +91,66 @@ jobs:
               sudo sh get-docker.sh
             fi
 
-            if ! command -v docker-compose >/dev/null 2>&1; then
-              echo "Installing docker-compose..."
-              sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-\$(uname -s)-\$(uname -m)" \
-                -o /usr/local/bin/docker-compose
-              sudo chmod +x /usr/local/bin/docker-compose
+            if ! command -v docker compose >/dev/null 2>&1 && ! command -v docker-compose >/dev/null 2>&1; then
+              echo "Installing docker-compose plugin..."
+              if command -v apt-get >/dev/null 2>&1; then
+                sudo apt-get update
+                sudo apt-get install -y docker-compose-plugin
+              fi
             fi
 
-            # Ensure firewall ports (optional – you can also set this in console)
             if command -v ufw >/dev/null 2>&1; then
               sudo ufw allow 22/tcp || true
               sudo ufw allow 80/tcp || true
-              sudo ufw allow 443/tcp || true
               sudo ufw allow 3000/tcp || true
               sudo ufw allow 5000/tcp || true
               sudo ufw allow 8080/tcp || true
             fi
 
-            echo "Stopping existing containers..."
-            docker-compose down || true
+            if [ -f docker-compose.yml ]; then
+              (docker compose down || docker-compose down) || true
+            fi
 
-            echo "Building and starting containers..."
-            docker-compose pull || true
-            docker-compose build
-            docker-compose up -d
+            if command -v docker compose >/dev/null 2>&1; then
+              docker compose pull || true
+              docker compose build
+              docker compose up -d
+            else
+              docker-compose pull || true
+              docker-compose build
+              docker-compose up -d
+            fi
+          ENDSSH
 
-            echo "Current container status:"
-            docker-compose ps
-          EOF
+      - name: Backend health check
+        run: |
+          for i in {1..12}; do
+            if curl -fsS "http://${{ env.VM_IP }}:5000/health" >/dev/null; then
+              echo "Backend healthy"; exit 0
+            fi
+            echo "Waiting for backend..."
+            sleep 10
+          done
+          echo "Backend health check failed"; exit 1
+
+      - name: Frontend health check
+        run: |
+          for i in {1..12}; do
+            if curl -fsS "http://${{ env.VM_IP }}:3000/health" >/dev/null; then
+              echo "Frontend healthy"; exit 0
+            fi
+            echo "Waiting for frontend..."
+            sleep 10
+          done
+          echo "Frontend health check failed"; exit 1
+
+      - name: Infrastructure health check
+        run: |
+          for i in {1..12}; do
+            if curl -fsS "http://${{ env.VM_IP }}:8080/health" >/dev/null; then
+              echo "Infrastructure healthy"; exit 0
+            fi
+            echo "Waiting for infrastructure..."
+            sleep 10
+          done
+          echo "Infrastructure health check failed"; exit 1
