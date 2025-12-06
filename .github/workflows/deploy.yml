@@ -25,32 +25,6 @@ jobs:
           ${{ secrets.ENV }}
           EOF
 
-      - name: Run init.sql against RDS
-        env:
-          ENV_CONTENT: ${{ secrets.ENV }}
-        run: |
-          set -e
-          echo "$ENV_CONTENT" > env_for_db.sh
-
-          # Load DB_* variables from ENV secret
-          set -a
-          source env_for_db.sh
-          set +a
-
-          echo "Using DB_HOST=$DB_HOST DB_PORT=${DB_PORT:-5432} DB_NAME=$DB_NAME DB_USER=$DB_USER"
-
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
-
-          PGPASSWORD="$DB_PASSWORD" psql \
-            -h "$DB_HOST" \
-            -p "${DB_PORT:-5432}" \
-            -U "$DB_USER" \
-            -d "$DB_NAME" \
-            -f database/init.sql
-
-          echo "init.sql completed successfully"
-
       - name: Configure SSH
         run: |
           mkdir -p ~/.ssh
@@ -79,11 +53,49 @@ jobs:
           scp -i ~/.ssh/id_ed25519 .env \
             ${{ env.VM_USER }}@${{ env.VM_IP }}:~/${{ env.PROJECT_DIR }}/.env
 
+      # Automated init.sql from EC2 (inside VPC → can reach RDS)
+      - name: Initialize RDS schema from EC2
+        run: |
+          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
+            set -e
+            cd ~/${{ env.PROJECT_DIR }}
+
+            if [ ! -f .env ]; then
+              echo ".env not found on VM"; exit 1
+            fi
+
+            # Install psql client if missing
+            if ! command -v psql >/dev/null 2>&1; then
+              if command -v apt-get >/dev/null 2>&1; then
+                sudo apt-get update
+                sudo apt-get install -y postgresql-client
+              else
+                echo "No apt-get; cannot install psql"; exit 1
+              fi
+            fi
+
+            # Load DB_* variables from .env
+            set -a
+            . .env
+            set +a
+
+            echo "Running init.sql against \$DB_HOST:\${DB_PORT:-5432}/\$DB_NAME as \$DB_USER"
+
+            PGPASSWORD="$DB_PASSWORD" psql \
+              -h "$DB_HOST" \
+              -p "${DB_PORT:-5432}" \
+              -U "$DB_USER" \
+              -d "$DB_NAME" \
+              -f database/init.sql
+
+            echo "init.sql completed on EC2"
+          ENDSSH
+
       - name: Install Docker & docker-compose on VM and deploy
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
             set -e
-            cd ~/unified_app
+            cd ~/${{ env.PROJECT_DIR }}
 
             if ! command -v docker >/dev/null 2>&1; then
               echo "Installing Docker..."
