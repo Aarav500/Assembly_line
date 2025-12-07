@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  VM_IP: 3.229.134.38        # EC2 public IP
+  VM_IP:  100.31.44.107       # EC2 public IP
   VM_USER: ubuntu            # EC2 SSH user
   PROJECT_DIR: unified_app   # directory on the VM
 
