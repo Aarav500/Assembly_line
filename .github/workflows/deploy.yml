@@ -53,7 +53,6 @@ jobs:
           scp -i ~/.ssh/id_ed25519 .env \
             ${{ env.VM_USER }}@${{ env.VM_IP }}:~/${{ env.PROJECT_DIR }}/.env
 
-      # Automated init.sql from EC2 (inside VPC → can reach RDS)
       - name: Initialize RDS schema from EC2
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
@@ -97,13 +96,15 @@ jobs:
             set -e
             cd ~/${{ env.PROJECT_DIR }}
 
+            # Install Docker if missing
             if ! command -v docker >/dev/null 2>&1; then
               echo "Installing Docker..."
               curl -fsSL https://get.docker.com -o get-docker.sh
               sudo sh get-docker.sh
             fi
 
-            if ! command -v docker compose >/dev/null 2>&1 && ! command -v docker-compose >/dev/null 2>&1; then
+            # Install compose plugin if missing
+            if ! sudo docker compose version >/dev/null 2>&1 && ! command -v docker-compose >/dev/null 2>&1; then
               echo "Installing docker-compose plugin..."
               if command -v apt-get >/dev/null 2>&1; then
                 sudo apt-get update
@@ -111,6 +112,7 @@ jobs:
               fi
             fi
 
+            # Open firewall ports (if ufw is used)
             if command -v ufw >/dev/null 2>&1; then
               sudo ufw allow 22/tcp || true
               sudo ufw allow 80/tcp || true
@@ -119,19 +121,24 @@ jobs:
               sudo ufw allow 8080/tcp || true
             fi
 
+            # Stop existing stack
             if [ -f docker-compose.yml ]; then
-              (docker compose down || docker-compose down) || true
+              (sudo docker compose down || sudo docker-compose down) || true
             fi
 
-            if command -v docker compose >/dev/null 2>&1; then
-              docker compose pull || true
-              docker compose build
-              docker compose up -d
+            echo "Building and starting containers..."
+            if sudo docker compose version >/dev/null 2>&1; then
+              sudo docker compose pull || true
+              sudo docker compose build
+              sudo docker compose up -d
             else
-              docker-compose pull || true
-              docker-compose build
-              docker-compose up -d
+              sudo docker-compose pull || true
+              sudo docker-compose build
+              sudo docker-compose up -d
             fi
+
+            echo "Current containers:"
+            sudo docker ps
           ENDSSH
 
       - name: Backend health check
