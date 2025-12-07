@@ -1,9 +1,6 @@
 version: '3.8'
 
 services:
-  # ============================
-  # Backend Service
-  # ============================
   backend:
     build:
       context: ./backend
@@ -11,26 +8,25 @@ services:
     container_name: unified_backend
     ports:
       - "5000:5000"
+    env_file:
+      - .env
     environment:
-      - FLASK_APP=app.py
-      - FLASK_ENV=production
-      - ENVIRONMENT=production
-      # RDS – provided via .env
-      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
-      # Redis inside this compose
-      - REDIS_URL=redis://redis:6379/0
-      - SECRET_KEY=${SECRET_KEY}
-      - PYTHONUNBUFFERED=1
-      - VM_PUBLIC_IP=${VM_PUBLIC_IP}
-      - VM_PRIVATE_IP=${VM_PRIVATE_IP}
+      FLASK_APP: app.py
+      FLASK_ENV: ${FLASK_ENV:-production}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      SECRET_KEY: ${SECRET_KEY}
+      PYTHONUNBUFFERED: 1
+      VM_PUBLIC_IP: ${VM_PUBLIC_IP}
+      VM_PRIVATE_IP: ${VM_PRIVATE_IP}
+      ENVIRONMENT: ${ENVIRONMENT:-production}
     volumes:
-      - ./backend:/app
+      # DO NOT mount ./backend:/app here – it deletes start.sh
       - backend_venvs:/app/.venvs
       - backend_data:/app/data
       - backend_logs:/app/logs
     depends_on:
-      redis:
-        condition: service_healthy
+      - redis
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
@@ -41,9 +37,6 @@ services:
     networks:
       - app_network
 
-  # ============================
-  # Frontend Service
-  # ============================
   frontend:
     build:
       context: ./frontend
@@ -51,14 +44,15 @@ services:
     container_name: unified_frontend
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     environment:
-      - FLASK_APP=app.py
-      - ENVIRONMENT=production
-      - PYTHONUNBUFFERED=1
-      # Frontend talks to backend through public IP of EC2
-      - BACKEND_API_URL=http://${VM_PUBLIC_IP}:5000
+      FLASK_APP: app.py
+      BACKEND_API_URL: ${BACKEND_URL}
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      PYTHONUNBUFFERED: 1
     volumes:
-      - ./frontend:/app
+      # DO NOT mount ./frontend:/app
       - frontend_venvs:/app/.venvs
       - frontend_data:/app/data
       - frontend_logs:/app/logs
@@ -74,10 +68,6 @@ services:
     networks:
       - app_network
 
-  # ============================
-  # Infrastructure / Monitoring
-  # (infra-* modules from prompts_infra.json)
-  # ============================
   infrastructure:
     build:
       context: ./infrastructure
@@ -85,18 +75,18 @@ services:
     container_name: unified_infrastructure
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     environment:
-      - MONITORING_ENABLED=true
-      - PYTHONUNBUFFERED=1
-      - VM_PUBLIC_IP=${VM_PUBLIC_IP}
-      # Talk to other containers by service name
-      - BACKEND_URL=http://backend:5000
-      - FRONTEND_URL=http://frontend:3000
-      # RDS / Redis
-      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
-      - REDIS_URL=redis://redis:6379/0
+      MONITORING_ENABLED: "true"
+      BACKEND_URL: ${BACKEND_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      PYTHONUNBUFFERED: 1
+      VM_PUBLIC_IP: ${VM_PUBLIC_IP}
     volumes:
-      - ./infrastructure:/app
+      # DO NOT mount ./infrastructure:/app
       - infra_venvs:/app/.venvs
       - infra_data:/app/data
       - infra_logs:/app/logs
@@ -115,9 +105,6 @@ services:
     networks:
       - app_network
 
-  # ============================
-  # Redis (free on your EC2 VM)
-  # ============================
   redis:
     image: redis:7-alpine
     container_name: unified_redis
@@ -135,19 +122,13 @@ services:
       - app_network
     command: redis-server --appendonly yes --maxmemory 256mb
 
-  # ============================
-  # Nginx Reverse Proxy
-  # ============================
   nginx:
     image: nginx:alpine
     container_name: unified_nginx
     ports:
       - "80:80"
-      - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      # SSL folder can be added later if you get certs
-      # - ./nginx/ssl:/etc/nginx/ssl:ro
       - nginx_logs:/var/log/nginx
     depends_on:
       - backend
