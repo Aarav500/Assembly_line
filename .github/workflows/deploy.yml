@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
 
 env:
-  VM_IP:  100.31.44.107       # EC2 public IP
-  VM_USER: ubuntu            # EC2 SSH user
-  PROJECT_DIR: unified_app   # directory on the VM
+  VM_IP: 100.31.44.107        # new EC2 IP
+  VM_USER: ubuntu
+  PROJECT_DIR: unified_app
 
 jobs:
   deploy:
@@ -53,66 +53,24 @@ jobs:
           scp -i ~/.ssh/id_ed25519 .env \
             ${{ env.VM_USER }}@${{ env.VM_IP }}:~/${{ env.PROJECT_DIR }}/.env
 
-      - name: Initialize RDS schema from EC2
-        run: |
-          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
-            set -e
-            cd ~/${{ env.PROJECT_DIR }}
-
-            if [ ! -f .env ]; then
-              echo ".env not found on VM"; exit 1
-            fi
-
-            # Install psql client if missing
-            if ! command -v psql >/dev/null 2>&1; then
-              if command -v apt-get >/dev/null 2>&1; then
-                sudo apt-get update
-                sudo apt-get install -y postgresql-client
-              else
-                echo "No apt-get; cannot install psql"; exit 1
-              fi
-            fi
-
-            # Load DB_* variables from .env
-            set -a
-            . .env
-            set +a
-
-            echo "Running init.sql against \$DB_HOST:\${DB_PORT:-5432}/\$DB_NAME as \$DB_USER"
-
-            PGPASSWORD="$DB_PASSWORD" psql \
-              -h "$DB_HOST" \
-              -p "${DB_PORT:-5432}" \
-              -U "$DB_USER" \
-              -d "$DB_NAME" \
-              -f database/init.sql
-
-            echo "init.sql completed on EC2"
-          ENDSSH
-
       - name: Install Docker & docker-compose on VM and deploy
         run: |
           ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
             set -e
             cd ~/${{ env.PROJECT_DIR }}
 
-            # Install Docker if missing
             if ! command -v docker >/dev/null 2>&1; then
-              echo "Installing Docker..."
               curl -fsSL https://get.docker.com -o get-docker.sh
               sudo sh get-docker.sh
             fi
 
-            # Install compose plugin if missing
             if ! sudo docker compose version >/dev/null 2>&1 && ! command -v docker-compose >/dev/null 2>&1; then
-              echo "Installing docker-compose plugin..."
               if command -v apt-get >/dev/null 2>&1; then
                 sudo apt-get update
                 sudo apt-get install -y docker-compose-plugin
               fi
             fi
 
-            # Open firewall ports (if ufw is used)
             if command -v ufw >/dev/null 2>&1; then
               sudo ufw allow 22/tcp || true
               sudo ufw allow 80/tcp || true
@@ -121,12 +79,10 @@ jobs:
               sudo ufw allow 8080/tcp || true
             fi
 
-            # Stop existing stack
             if [ -f docker-compose.yml ]; then
               (sudo docker compose down || sudo docker-compose down) || true
             fi
 
-            echo "Building and starting containers..."
             if sudo docker compose version >/dev/null 2>&1; then
               sudo docker compose pull || true
               sudo docker compose build
@@ -137,7 +93,6 @@ jobs:
               sudo docker-compose up -d
             fi
 
-            echo "Current containers:"
             sudo docker ps
           ENDSSH
 
