@@ -10,11 +10,10 @@ This environment does not have outbound network access or the ability to expose 
    docker-compose up --build
    ```
 4. After the containers report healthy, access:
-   - **Primary entrypoint:** http://localhost/ (nginx now points this to the frontend control plane so you have a visible landing page.)
-   - API via nginx: http://localhost/api/ (routes to the backend)
-   - Infrastructure dashboard: http://localhost/infra/
-   - Backend control plane directly: http://localhost:5000/
-   - Frontend control plane directly: http://localhost:3000/
+   - **Primary entrypoint:** http://localhost/ (nginx now points this to the infrastructure dashboard so you immediately see container status.)
+   - Backend control plane: http://localhost:5000/ (or `/health` for raw status)
+   - Frontend control plane: http://localhost:3000/ (or `/health` for raw status)
+   - Infrastructure dashboard directly: http://localhost:8080/health or http://localhost:8080/
 
 ## Run lightweight local health servers (no Docker)
 For quick checks without Docker, you can use the Flask-based runners added previously:
