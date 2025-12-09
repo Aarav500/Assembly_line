@@ -214,8 +214,8 @@ if [ -f /app/venv_report.txt ]; then
 fi
 
 echo ""
-echo "=== Starting Health Check Server ==="
-exec python /app/health.py
+echo "=== Starting Backend API ==="
+exec python /app/app.py
 EOFSTART
 
 RUN chmod +x /app/start.sh

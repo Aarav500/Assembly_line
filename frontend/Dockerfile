@@ -31,8 +31,8 @@ RUN apt-get update && apt-get install -y \
 # ============================================
 RUN pip install --upgrade pip setuptools wheel
 
-# Install Flask for health check endpoint
-RUN pip install flask gunicorn
+# Install Flask + requests for control plane
+RUN pip install flask gunicorn requests
 
 # ============================================
 # Copy smart venv manager FIRST
@@ -207,8 +207,8 @@ if [ -f /app/venv_report.txt ]; then
 fi
 
 echo ""
-echo "=== Starting Health Check Server ==="
-exec python /app/health.py
+echo "=== Starting Frontend Control Plane ==="
+exec python /app/app.py
 EOFSTART
 
 RUN chmod +x /app/start.sh
