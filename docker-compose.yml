@@ -163,13 +163,13 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - nginx_logs:/var/log/nginx
+    # Start nginx immediately so port 80 is reachable even if upstream
+    # services are still warming up. Upstreams may briefly return 502s
+    # until their health checks go green.
     depends_on:
-      backend:
-        condition: service_healthy
-      frontend:
-        condition: service_healthy
-      infrastructure:
-        condition: service_healthy
+      - backend
+      - frontend
+      - infrastructure
     restart: unless-stopped
     networks:
       - app_network
