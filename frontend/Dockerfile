@@ -31,8 +31,8 @@ RUN apt-get update && apt-get install -y \
 # ============================================
 RUN pip install --upgrade pip setuptools wheel
 
-# Install Flask for health check endpoint
-RUN pip install flask gunicorn
+# Install Flask + requests for control plane
+RUN pip install flask gunicorn requests
 
 # ============================================
 # Copy smart venv manager FIRST
@@ -126,6 +126,20 @@ import sys
 
 app = Flask(__name__)
 
+@app.route('/')
+def index():
+    """Landing page to help operators find the right endpoints"""
+    base_url = os.environ.get('VM_PUBLIC_IP') or 'localhost'
+    return jsonify({
+        'message': 'Frontend control plane is running',
+        'next_steps': [
+            'Use /health to verify container status',
+            'Use /modules to inspect per-module virtual environments',
+            'Access http://%s/ through nginx for the user-facing entrypoint',
+            'Use /infra/ via nginx to reach the infrastructure dashboard',
+        ]
+    }), 200
+
 @app.route('/health')
 def health():
     """Health check endpoint"""
@@ -193,8 +207,8 @@ if [ -f /app/venv_report.txt ]; then
 fi
 
 echo ""
-echo "=== Starting Health Check Server ==="
-exec python /app/health.py
+echo "=== Starting Frontend Control Plane ==="
+exec gunicorn -b 0.0.0.0:3000 app:app --workers ${WORKERS:-2} --timeout 60 --access-logfile - --error-logfile -
 EOFSTART
 
 RUN chmod +x /app/start.sh
