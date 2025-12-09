@@ -132,6 +132,20 @@ import sys
 
 app = Flask(__name__)
 
+@app.route('/')
+def index():
+    """Landing page to help operators find the right endpoints"""
+    base_url = os.environ.get('VM_PUBLIC_IP') or 'localhost'
+    return jsonify({
+        'message': 'Backend control plane is running',
+        'next_steps': [
+            'Use /health to verify container status',
+            'Use /modules to inspect per-module virtual environments',
+            'Access the nginx entrypoint on http://%s/ for the dashboard/front-end' % base_url,
+            'If you intended to hit the API, prefix your path with /api/ when using nginx',
+        ]
+    }), 200
+
 @app.route('/health')
 def health():
     """Health check endpoint"""
@@ -200,8 +214,8 @@ if [ -f /app/venv_report.txt ]; then
 fi
 
 echo ""
-echo "=== Starting Health Check Server ==="
-exec python /app/health.py
+echo "=== Starting Backend API ==="
+exec python /app/app.py
 EOFSTART
 
 RUN chmod +x /app/start.sh
