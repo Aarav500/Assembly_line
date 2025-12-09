@@ -4,19 +4,16 @@ This environment does not have outbound network access or the ability to expose 
 
 ## Run the full stack with Docker Compose
 1. Ensure Docker and Docker Compose are installed.
-2. Provide the required environment values in a `.env` file (database credentials, `BACKEND_URL`, `FRONTEND_URL`, `VM_PUBLIC_IP`, etc.). Defaults now fall back to the internal service names (`http://backend:5000`, `http://frontend:3000`) so the stack will boot even if these URLs are omitted.
+2. Provide the required environment values in a `.env` file (database credentials, `BACKEND_URL`, `FRONTEND_URL`, `VM_PUBLIC_IP`, etc.).
 3. From the repository root, build and launch the services:
    ```bash
    docker-compose up --build
    ```
 4. After the containers report healthy, access:
-   - **Primary entrypoint:** http://localhost/ (nginx now points this to the frontend control plane so you have a visible landing page.)
-   - API via nginx: http://localhost/api/ (routes to the backend)
-   - Infrastructure dashboard: http://localhost/infra/
-   - Backend control plane directly: http://localhost:5000/
-   - Frontend control plane directly: http://localhost:3000/
-
-The backend, frontend, and infrastructure services now run via Gunicorn inside their containers for better stability under load or during slow warmup periods.
+   - **Primary entrypoint:** http://localhost/ (nginx now points this to the infrastructure dashboard so you immediately see container status.)
+   - Backend control plane: http://localhost:5000/ (or `/health` for raw status)
+   - Frontend control plane: http://localhost:3000/ (or `/health` for raw status)
+   - Infrastructure dashboard directly: http://localhost:8080/health or http://localhost:8080/
 
 ## Run lightweight local health servers (no Docker)
 For quick checks without Docker, you can use the Flask-based runners added previously:

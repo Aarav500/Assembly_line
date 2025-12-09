@@ -215,7 +215,7 @@ fi
 
 echo ""
 echo "=== Starting Backend API ==="
-exec gunicorn -b 0.0.0.0:5000 app:app --workers ${WORKERS:-2} --timeout 60 --access-logfile - --error-logfile -
+exec python /app/app.py
 EOFSTART
 
 RUN chmod +x /app/start.sh

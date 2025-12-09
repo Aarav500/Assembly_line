@@ -41,12 +41,7 @@ TEMPLATE = """
   </head>
   <body>
     <h1>Infrastructure Dashboard</h1>
-    <p>External entrypoint: <a href="http://{{ public_host }}/" target="_blank">http://{{ public_host }}/</a> (nginx front door)</p>
-    <p style="margin-top:8px;">Direct ports (bypass nginx if it is still starting):
-      <a href="http://{{ public_host }}:3000/" target="_blank">frontend:3000</a> |
-      <a href="http://{{ public_host }}:5000/" target="_blank">backend:5000</a> |
-      <a href="http://{{ public_host }}:8080/" target="_blank">infra:8080</a>
-    </p>
+    <p>External entrypoint: <a href="http://{{ public_host }}/" target="_blank">http://{{ public_host }}/</a> (frontend)</p>
     <div class="services">
       {% for svc in services %}
       <div class="card">
