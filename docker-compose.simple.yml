@@ -1,0 +1,70 @@
+version: '3.8'
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: unified_backend/Dockerfile
+    container_name: unified_backend
+    ports:
+    - 5000:5000
+    environment:
+    - FLASK_ENV=production
+    - DEBUG=False
+    volumes:
+    - ./backend:/app/backend
+    - ./frontend:/app/frontend
+    - ./infrastructure:/app/infrastructure
+    networks:
+    - app_network
+    restart: unless-stopped
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:5000/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  postgres:
+    image: postgres:15-alpine
+    container_name: unified_postgres
+    environment:
+    - POSTGRES_DB=unified_db
+    - POSTGRES_USER=unified_user
+    - POSTGRES_PASSWORD=unified_pass
+    ports:
+    - 5432:5432
+    volumes:
+    - postgres_data:/var/lib/postgresql/data
+    networks:
+    - app_network
+    restart: unless-stopped
+  redis:
+    image: redis:7-alpine
+    container_name: unified_redis
+    ports:
+    - 6379:6379
+    volumes:
+    - redis_data:/data
+    networks:
+    - app_network
+    restart: unless-stopped
+  nginx:
+    image: nginx:alpine
+    container_name: unified_nginx
+    ports:
+    - 80:80
+    volumes:
+    - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+    - backend
+    networks:
+    - app_network
+    restart: unless-stopped
+networks:
+  app_network:
+    driver: bridge
+volumes:
+  postgres_data: {}
+  redis_data: {}
