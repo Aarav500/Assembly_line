@@ -42,58 +42,104 @@ jobs:
             set -e
             cd ~/${{ env.PROJECT_DIR }}
 
-            # Stop ALL existing containers (including old setup)
-            echo "Stopping old containers..."
-            docker-compose -f docker-compose.yml down 2>/dev/null || true
-            docker-compose -f docker-compose.simple.yml down 2>/dev/null || true
+            echo "========================================"
+            echo "STEP 1: CLEANING UP OLD DEPLOYMENT"
+            echo "========================================"
             
-            # Remove orphaned containers
+            # Stop ALL docker-compose configurations
+            echo "Stopping docker-compose services..."
+            docker-compose down --remove-orphans 2>/dev/null || true
+            docker-compose -f docker-compose.old.yml down --remove-orphans 2>/dev/null || true
+            docker-compose -f docker-compose.simple.yml down --remove-orphans 2>/dev/null || true
+            
+            # Stop ALL running containers
+            echo "Stopping all running containers..."
+            docker stop \$(docker ps -q) 2>/dev/null || true
+            
+            # Remove specific containers by name (old deployment)
+            echo "Removing old containers..."
+            docker rm -f unified_postgres unified_redis unified_backend unified_nginx \
+                unified_frontend unified_db unified_infrastructure \
+                postgres redis nginx frontend backend 2>/dev/null || true
+            
+            # Clean up all stopped containers
+            echo "Cleaning up stopped containers..."
             docker container prune -f
-
-            # Build and start ONLY the simple setup (4 containers)
-            echo "Building unified backend..."
-            docker-compose -f docker-compose.simple.yml build --no-cache
-
-            echo "Starting services..."
-            docker-compose -f docker-compose.simple.yml up -d
-
-            # Wait for health check
-            echo "Waiting for services to be ready..."
-            sleep 15
-
-            # Show status
-            echo "Container status:"
-            docker-compose -f docker-compose.simple.yml ps
             
-            # Show recent logs
-            echo "Recent logs:"
-            docker-compose -f docker-compose.simple.yml logs --tail=30
+            # Clean up unused networks
+            echo "Cleaning up unused networks..."
+            docker network prune -f
+            
+            echo ""
+            echo "========================================"
+            echo "STEP 2: BUILDING NEW DEPLOYMENT"
+            echo "========================================"
+            docker-compose build --no-cache
+
+            echo ""
+            echo "========================================"
+            echo "STEP 3: STARTING SERVICES (4 containers)"
+            echo "========================================"
+            docker-compose up -d --remove-orphans
+
+            echo ""
+            echo "Waiting for services to be ready..."
+            sleep 20
+
+            echo ""
+            echo "========================================"
+            echo "DEPLOYMENT STATUS"
+            echo "========================================"
+            docker-compose ps
+
+            echo ""
+            echo "========================================"
+            echo "RECENT LOGS"
+            echo "========================================"
+            docker-compose logs --tail=50 backend
+
+            echo ""
+            echo "========================================"
+            echo "RUNNING CONTAINERS"
+            echo "========================================"
+            docker ps
           ENDSSH
 
       - name: Health Check
         run: |
+          echo "Waiting for backend to be ready..."
           for i in {1..12}; do
-            if curl -fsS "http://${{ env.VM_IP }}/health" >/dev/null; then
-              echo "Deployment successful!"
+            if curl -fsS "http://${{ env.VM_IP }}/health" >/dev/null 2>&1; then
+              echo "✓ Health check passed!"
+              curl -s "http://${{ env.VM_IP }}/health" | python3 -m json.tool
               exit 0
             fi
-            echo "Waiting for service... (attempt $i/12)"
+            echo "Waiting... (attempt $i/12)"
             sleep 10
           done
-          echo "Health check failed"
+          echo "✗ Health check failed after 2 minutes"
           exit 1
 
       - name: Deployment Complete
         run: |
-          echo "========================================="
-          echo "DEPLOYMENT SUCCESSFUL"
-          echo "========================================="
-          echo "URL: http://${{ env.VM_IP }}"
-          echo "API: http://${{ env.VM_IP }}/api/services"
-          echo "Health: http://${{ env.VM_IP }}/health"
           echo ""
-          echo "Only 4 containers running:"
-          echo "  - unified_backend (Flask + all modules)"
+          echo "========================================"
+          echo "✓ DEPLOYMENT SUCCESSFUL"
+          echo "========================================"
+          echo ""
+          echo "Access your application:"
+          echo "  Main URL:    http://${{ env.VM_IP }}"
+          echo "  Health:      http://${{ env.VM_IP }}/health"
+          echo "  Services:    http://${{ env.VM_IP }}/api/services"
+          echo ""
+          echo "Running containers: 4"
+          echo "  - unified_backend (Flask + all 437 modules)"
           echo "  - unified_postgres"
           echo "  - unified_redis"
           echo "  - unified_nginx"
+          echo ""
+          echo "View logs:"
+          echo "  ssh ubuntu@${{ env.VM_IP }}"
+          echo "  cd unified_app"
+          echo "  docker-compose logs -f"
+          echo "========================================"
