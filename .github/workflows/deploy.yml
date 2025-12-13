@@ -1,4 +1,4 @@
-name: Deploy to AWS VM
+name: Deploy Unified App
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  VM_IP: 100.31.44.107        # new EC2 IP
+  VM_IP: 100.31.44.107
   VM_USER: ubuntu
   PROJECT_DIR: unified_app
 
@@ -16,115 +16,84 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Create .env from secret
-        run: |
-          cat << 'EOF' > .env
-          ${{ secrets.ENV }}
-          EOF
-
-      - name: Configure SSH
+      - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -H ${{ env.VM_IP }} >> ~/.ssh/known_hosts
 
-      - name: Test SSH connection
+      - name: Sync files to VM
         run: |
-          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} "echo 'SSH OK'"
-
-      - name: Sync project to VM
-        run: |
-          rsync -az --delete \
+          rsync -avz --delete \
             --exclude='.git' \
-            --exclude='.github' \
-            --exclude='**/__pycache__' \
-            --exclude='**/*.pyc' \
-            --exclude='**/logs/*' \
-            --exclude='**/data/*' \
-            -e "ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no" \
+            --exclude='__pycache__' \
+            --exclude='*.pyc' \
+            --exclude='.venv' \
+            -e "ssh -i ~/.ssh/id_ed25519" \
             ./ ${{ env.VM_USER }}@${{ env.VM_IP }}:~/${{ env.PROJECT_DIR }}/
 
-      - name: Copy .env to VM
+      - name: Deploy on VM
         run: |
-          scp -i ~/.ssh/id_ed25519 .env \
-            ${{ env.VM_USER }}@${{ env.VM_IP }}:~/${{ env.PROJECT_DIR }}/.env
-
-      - name: Install Docker & docker-compose on VM and deploy
-        run: |
-          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
+          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << ENDSSH
             set -e
             cd ~/${{ env.PROJECT_DIR }}
 
-            if ! command -v docker >/dev/null 2>&1; then
-              curl -fsSL https://get.docker.com -o get-docker.sh
-              sudo sh get-docker.sh
-            fi
+            # Stop ALL existing containers (including old setup)
+            echo "Stopping old containers..."
+            docker-compose -f docker-compose.yml down 2>/dev/null || true
+            docker-compose -f docker-compose.simple.yml down 2>/dev/null || true
+            
+            # Remove orphaned containers
+            docker container prune -f
 
-            if ! sudo docker compose version >/dev/null 2>&1 && ! command -v docker-compose >/dev/null 2>&1; then
-              if command -v apt-get >/dev/null 2>&1; then
-                sudo apt-get update
-                sudo apt-get install -y docker-compose-plugin
-              fi
-            fi
+            # Build and start ONLY the simple setup (4 containers)
+            echo "Building unified backend..."
+            docker-compose -f docker-compose.simple.yml build --no-cache
 
-            if command -v ufw >/dev/null 2>&1; then
-              sudo ufw allow 22/tcp || true
-              sudo ufw allow 80/tcp || true
-              sudo ufw allow 3000/tcp || true
-              sudo ufw allow 5000/tcp || true
-              sudo ufw allow 8080/tcp || true
-            fi
+            echo "Starting services..."
+            docker-compose -f docker-compose.simple.yml up -d
 
-            if [ -f docker-compose.yml ]; then
-              (sudo docker compose down || sudo docker-compose down) || true
-            fi
+            # Wait for health check
+            echo "Waiting for services to be ready..."
+            sleep 15
 
-            if sudo docker compose version >/dev/null 2>&1; then
-              sudo docker compose pull || true
-              sudo docker compose build
-              sudo docker compose up -d
-            else
-              sudo docker-compose pull || true
-              sudo docker-compose build
-              sudo docker-compose up -d
-            fi
-
-            sudo docker ps
+            # Show status
+            echo "Container status:"
+            docker-compose -f docker-compose.simple.yml ps
+            
+            # Show recent logs
+            echo "Recent logs:"
+            docker-compose -f docker-compose.simple.yml logs --tail=30
           ENDSSH
 
-      - name: Backend health check
+      - name: Health Check
         run: |
           for i in {1..12}; do
-            if curl -fsS "http://${{ env.VM_IP }}:5000/health" >/dev/null; then
-              echo "Backend healthy"; exit 0
+            if curl -fsS "http://${{ env.VM_IP }}/health" >/dev/null; then
+              echo "Deployment successful!"
+              exit 0
             fi
-            echo "Waiting for backend..."
+            echo "Waiting for service... (attempt $i/12)"
             sleep 10
           done
-          echo "Backend health check failed"; exit 1
+          echo "Health check failed"
+          exit 1
 
-      - name: Frontend health check
+      - name: Deployment Complete
         run: |
-          for i in {1..12}; do
-            if curl -fsS "http://${{ env.VM_IP }}:3000/health" >/dev/null; then
-              echo "Frontend healthy"; exit 0
-            fi
-            echo "Waiting for frontend..."
-            sleep 10
-          done
-          echo "Frontend health check failed"; exit 1
-
-      - name: Infrastructure health check
-        run: |
-          for i in {1..12}; do
-            if curl -fsS "http://${{ env.VM_IP }}:8080/health" >/dev/null; then
-              echo "Infrastructure healthy"; exit 0
-            fi
-            echo "Waiting for infrastructure..."
-            sleep 10
-          done
-          echo "Infrastructure health check failed"; exit 1
+          echo "========================================="
+          echo "DEPLOYMENT SUCCESSFUL"
+          echo "========================================="
+          echo "URL: http://${{ env.VM_IP }}"
+          echo "API: http://${{ env.VM_IP }}/api/services"
+          echo "Health: http://${{ env.VM_IP }}/health"
+          echo ""
+          echo "Only 4 containers running:"
+          echo "  - unified_backend (Flask + all modules)"
+          echo "  - unified_postgres"
+          echo "  - unified_redis"
+          echo "  - unified_nginx"

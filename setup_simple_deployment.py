@@ -140,10 +140,10 @@ simple_compose = {
     }
 }
 
-with open(PROJECT_ROOT / "docker-compose.simple.yml", 'w', encoding='utf-8') as f:
+with open(PROJECT_ROOT / "docker-compose.yml", 'w', encoding='utf-8') as f:
     yaml.dump(simple_compose, f, default_flow_style=False, sort_keys=False)
 
-print("✓ Created docker-compose.simple.yml (ONLY 4 SERVICES!)")
+print("✓ Created docker-compose.yml (ONLY 4 SERVICES!)")
 
 # 6. Create updated nginx config
 nginx_conf = """worker_processes auto;
@@ -238,17 +238,17 @@ jobs:
             cd ~/${{ env.PROJECT_DIR }}
 
             # Stop existing services
-            docker-compose -f docker-compose.simple.yml down || true
+            docker-compose -f docker-compose.yml down || true
 
             # Build and start
-            docker-compose -f docker-compose.simple.yml build
-            docker-compose -f docker-compose.simple.yml up -d
+            docker-compose -f docker-compose.yml build
+            docker-compose -f docker-compose.yml up -d
 
             # Wait for health check
             sleep 10
 
             # Show status
-            docker-compose -f docker-compose.simple.yml ps
+            docker-compose -f docker-compose.yml ps
           ENDSSH
 
       - name: Health Check
@@ -274,8 +274,8 @@ jobs:
           echo "Health: http://${{ env.VM_IP }}/health"
 """
 
-(github_dir / "deploy-simple.yml").write_text(github_workflow, encoding='utf-8')
-print("✓ Created .github/workflows/deploy-simple.yml")
+(github_dir / "deploy.yml").write_text(github_workflow, encoding='utf-8')
+print("✓ Created .github/workflows/deploy.yml")
 
 # 8. Create local deployment script
 deploy_script = """#!/bin/bash
@@ -290,16 +290,16 @@ echo "Backend: Dynamically loads all 437 modules"
 echo ""
 
 # Build and start
-docker-compose -f docker-compose.simple.yml down
-docker-compose -f docker-compose.simple.yml build
-docker-compose -f docker-compose.simple.yml up -d
+docker-compose -f docker-compose.yml down
+docker-compose -f docker-compose.yml build
+docker-compose -f docker-compose.yml up -d
 
 echo ""
 echo "Waiting for services to start..."
 sleep 5
 
 # Show status
-docker-compose -f docker-compose.simple.yml ps
+docker-compose -f docker-compose.yml ps
 
 echo ""
 echo "========================================="
@@ -309,8 +309,8 @@ echo "Access: http://localhost"
 echo "API: http://localhost/api/services"
 echo "Health: http://localhost/health"
 echo ""
-echo "View logs: docker-compose -f docker-compose.simple.yml logs -f"
-echo "Stop: docker-compose -f docker-compose.simple.yml down"
+echo "View logs: docker-compose -f docker-compose.yml logs -f"
+echo "Stop: docker-compose -f docker-compose.yml down"
 echo "========================================="
 """
 
@@ -383,13 +383,13 @@ curl -X POST http://localhost/api/backend/a-003/api/detect/project \\
 
 ```bash
 # View logs
-docker-compose -f docker-compose.simple.yml logs -f backend
+docker-compose -f docker-compose.yml logs -f backend
 
 # Check health
 curl http://localhost/health
 
 # Restart
-docker-compose -f docker-compose.simple.yml restart backend
+docker-compose -f docker-compose.yml restart backend
 ```
 """
 
@@ -403,8 +403,8 @@ print("=" * 80)
 print()
 print("What was created:")
 print("  1. unified_backend/ - Single backend service")
-print("  2. docker-compose.simple.yml - ONLY 4 services!")
-print("  3. .github/workflows/deploy-simple.yml - Auto-deployment")
+print("  2. docker-compose.yml - ONLY 4 services!")
+print("  3. .github/workflows/deploy.yml - Auto-deployment")
 print("  4. deploy_simple.sh - Local deployment script")
 print("  5. DEPLOYMENT_README.md - Instructions")
 print()
