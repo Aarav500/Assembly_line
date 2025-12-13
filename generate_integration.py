@@ -233,8 +233,8 @@ class IntegrationGenerator:
         print(f"✓ Generated service_registry.json ({total} modules)")
 
     def generate_docker_compose(self):
-        """Generate docker-compose.yml with ALL services"""
-        filepath = self.project_root / "docker-compose.yml"
+        """Generate docker-compose.simple.yml with ALL services"""
+        filepath = self.project_root / "docker-compose.simple.yml"
 
         compose = {
             "version": "3.8",
@@ -313,7 +313,7 @@ class IntegrationGenerator:
         with open(filepath, 'w', encoding='utf-8') as f:
             yaml.dump(compose, f, default_flow_style=False, sort_keys=False)
 
-        print(f"✓ Generated docker-compose.yml ({len(compose['services'])} services)")
+        print(f"✓ Generated docker-compose.simple.yml ({len(compose['services'])} services)")
 
     def generate_orchestrator(self):
         """Generate orchestrator service"""

@@ -10,16 +10,16 @@ echo "Backend: Dynamically loads all 437 modules"
 echo ""
 
 # Build and start
-docker-compose -f docker-compose.yml down
-docker-compose -f docker-compose.yml build
-docker-compose -f docker-compose.yml up -d
+docker-compose -f docker-compose.simple.yml down
+docker-compose -f docker-compose.simple.yml build
+docker-compose -f docker-compose.simple.yml up -d
 
 echo ""
 echo "Waiting for services to start..."
 sleep 5
 
 # Show status
-docker-compose -f docker-compose.yml ps
+docker-compose -f docker-compose.simple.yml ps
 
 echo ""
 echo "========================================="

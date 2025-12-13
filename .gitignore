@@ -255,6 +255,6 @@ dmypy.json
 !venv_report.txt
 !venv_mapping.csv
 !Dockerfile
-!docker-compose.yml
+!docker-compose.simple.yml
 !.env.template
 !.gitignore

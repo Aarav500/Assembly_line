@@ -63,11 +63,11 @@ curl -X POST http://localhost/api/backend/a-003/api/detect/project \
 
 ```bash
 # View logs
-docker-compose -f docker-compose.yml logs -f backend
+docker-compose -f docker-compose.simple.yml logs -f backend
 
 # Check health
 curl http://localhost/health
 
 # Restart
-docker-compose -f docker-compose.yml restart backend
+docker-compose -f docker-compose.simple.yml restart backend
 ```

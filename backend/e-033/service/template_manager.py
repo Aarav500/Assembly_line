@@ -156,7 +156,7 @@ class TemplateManager:
         name = base.replace('.j2', '')
         # map specific names
         if name == 'docker-compose':
-            return 'docker/docker-compose.yml'
+            return 'docker/docker-compose.simple.yml'
         if name == 'k8s-deployment':
             return 'k8s/deployment.yaml'
         if name == 'terraform-main':

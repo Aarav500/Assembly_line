@@ -31,7 +31,7 @@ class DockerDetector:
         return None
 
     def _find_compose(self, root: str) -> Optional[str]:
-        candidates = {"docker-compose.yml", "docker-compose.yaml", "compose.yml", "compose.yaml"}
+        candidates = {"docker-compose.simple.yml", "docker-compose.yaml", "compose.yml", "compose.yaml"}
         for dirpath, dirnames, filenames in os.walk(root):
             dirnames[:] = [d for d in dirnames if d not in {".git", "node_modules", "venv", ".venv", "__pycache__"}]
             for fn in filenames:

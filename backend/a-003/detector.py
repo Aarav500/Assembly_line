@@ -78,7 +78,7 @@ CICD_PATHS = {
 }
 
 INFRA_FILENAMES = {
-    "docker": ["Dockerfile", "docker-compose.yml", "docker-compose.yaml", "compose.yml", "compose.yaml"],
+    "docker": ["Dockerfile", "docker-compose.simple.yml", "docker-compose.yaml", "compose.yml", "compose.yaml"],
     "helm_chart": ["Chart.yaml"],
     "serverless": ["serverless.yml", "serverless.yaml"],
     "pulumi": ["Pulumi.yaml"],

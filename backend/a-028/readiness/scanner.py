@@ -169,7 +169,7 @@ def _detect_infra(root: str) -> Dict[str, Any]:
         os.path.exists(os.path.join(root, "Dockerfile")),
         os.path.exists(os.path.join(root, "docker", "Dockerfile"))
     ])
-    docker_compose = len(glob_find(root, ["docker-compose.yml", "docker-compose.yaml", "compose.yml", "compose.yaml"])) > 0
+    docker_compose = len(glob_find(root, ["docker-compose.simple.yml", "docker-compose.yaml", "compose.yml", "compose.yaml"])) > 0
 
     # Kubernetes detection: any yaml containing apiVersion and kind under k8s-like dirs
     k8s_candidates = glob_find(root, ["k8s/**/*.yml", "k8s/**/*.yaml", "kubernetes/**/*.yml", "kubernetes/**/*.yaml", "deploy/**/*.yml", "deploy/**/*.yaml"]) 

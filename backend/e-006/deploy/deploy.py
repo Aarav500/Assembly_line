@@ -16,7 +16,7 @@ DEFAULT_EXCLUDES = {
 }
 
 TOPLEVEL_FILES = [
-    "docker-compose.yml",
+    "docker-compose.simple.yml",
     ".dockerignore",
 ]
 

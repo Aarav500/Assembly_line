@@ -451,7 +451,7 @@ if __name__ == '__main__':
 **Required Changes**: Add proper service networking
 
 ```yaml
-# Add to existing docker-compose.yml
+# Add to existing docker-compose.simple.yml
 version: '3.8'
 
 services:
@@ -667,7 +667,7 @@ EOF
 ### Phase 3: Update Docker Compose (Day 3)
 ```bash
 # 1. Backup existing compose file
-cp docker-compose.yml docker-compose.yml.backup
+cp docker-compose.simple.yml docker-compose.simple.yml.backup
 
 # 2. Update with new services
 # [Add services from section 7]
