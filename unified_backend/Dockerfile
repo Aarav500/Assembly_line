@@ -20,8 +20,10 @@ COPY unified_backend/requirements.txt /app/unified_backend/requirements.txt
 WORKDIR /app/unified_backend
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the unified backend app
+# Copy the unified backend app and dashboard
 COPY unified_backend/app.py /app/unified_backend/app.py
+COPY unified_backend/dashboard.html /app/unified_backend/dashboard.html
+COPY unified_backend/ui_specs.json /app/unified_backend/ui_specs.json
 
 EXPOSE 5000
 
