@@ -1,430 +1,262 @@
 """
-Generate Simple Deployment Configuration
-Creates everything needed for ONE-CLICK deployment
+JARVIS-Style Dashboard Generator
+Creates an Iron Man inspired, interconnected, auto-executing dashboard
 
-Save as: D:/Assemblyline/unified_app/setup_simple_deployment.py
-Run: python setup_simple_deployment.py
+Save as: D:/Assemblyline/unified_app/generate_jarvis_dashboard.py
+Run: python generate_jarvis_dashboard.py
 """
 
+import os
+import json
+import time
+import anthropic
 from pathlib import Path
-import yaml
-
-PROJECT_ROOT = Path(r"D:\Assemblyline\unified_app")
-
-print("=" * 80)
-print("CREATING SIMPLE DEPLOYMENT CONFIGURATION")
-print("=" * 80)
-print()
-
-# 1. Create unified_backend directory
-unified_backend = PROJECT_ROOT / "unified_backend"
-unified_backend.mkdir(exist_ok=True)
-print("✓ Created unified_backend/")
-
-# 2. Copy the unified backend app.py (created in previous artifact)
-# User should manually copy it or we can create it here
-
-app_py = '''"""
-UNIFIED BACKEND SERVICE - See artifact 'unified_backend_service'
-"""
-# Copy the content from the artifact above
-'''
-
-# 3. Create requirements.txt for unified backend
-requirements = """Flask==3.0.3
-flask-cors==4.0.0
-gunicorn==21.2.0
-requests==2.32.3
-python-dotenv==1.0.1
-"""
-
-(unified_backend / "requirements.txt").write_text(requirements, encoding='utf-8')
-print("✓ Created unified_backend/requirements.txt")
-
-# 4. Create Dockerfile for unified backend
-dockerfile = """FROM python:3.11-slim
-
-WORKDIR /app
-
-# Copy service registry
-COPY service_registry.json /app/service_registry.json
-
-# Copy all backend modules
-COPY backend /app/backend
-COPY frontend /app/frontend
-COPY infrastructure /app/infrastructure
-
-# Install unified backend
-COPY unified_backend/requirements.txt /app/unified_backend/requirements.txt
-WORKDIR /app/unified_backend
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY unified_backend/app.py /app/unified_backend/app.py
-
-EXPOSE 5000
-
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "--timeout", "120", "app:app"]
-"""
-
-(unified_backend / "Dockerfile").write_text(dockerfile, encoding='utf-8')
-print("✓ Created unified_backend/Dockerfile")
-
-# 5. Create SIMPLE docker-compose.simple.yml (ONLY 4 SERVICES!)
-simple_compose = {
-    "version": "3.8",
-    "services": {
-        "backend": {
-            "build": {
-                "context": ".",
-                "dockerfile": "unified_backend/Dockerfile"
-            },
-            "container_name": "unified_backend",
-            "ports": ["5000:5000"],
-            "environment": [
-                "FLASK_ENV=production",
-                "DEBUG=False"
-            ],
-            "volumes": [
-                "./backend:/app/backend",
-                "./frontend:/app/frontend",
-                "./infrastructure:/app/infrastructure"
-            ],
-            "networks": ["app_network"],
-            "restart": "unless-stopped",
-            "healthcheck": {
-                "test": ["CMD", "curl", "-f", "http://localhost:5000/health"],
-                "interval": "30s",
-                "timeout": "10s",
-                "retries": 3
-            }
-        },
-        "postgres": {
-            "image": "postgres:15-alpine",
-            "container_name": "unified_postgres",
-            "environment": [
-                "POSTGRES_DB=unified_db",
-                "POSTGRES_USER=unified_user",
-                "POSTGRES_PASSWORD=unified_pass"
-            ],
-            "ports": ["5432:5432"],
-            "volumes": ["postgres_data:/var/lib/postgresql/data"],
-            "networks": ["app_network"],
-            "restart": "unless-stopped"
-        },
-        "redis": {
-            "image": "redis:7-alpine",
-            "container_name": "unified_redis",
-            "ports": ["6379:6379"],
-            "volumes": ["redis_data:/data"],
-            "networks": ["app_network"],
-            "restart": "unless-stopped"
-        },
-        "nginx": {
-            "image": "nginx:alpine",
-            "container_name": "unified_nginx",
-            "ports": ["80:80"],
-            "volumes": ["./nginx/nginx.conf:/etc/nginx/nginx.conf:ro"],
-            "depends_on": ["backend"],
-            "networks": ["app_network"],
-            "restart": "unless-stopped"
-        }
-    },
-    "networks": {
-        "app_network": {
-            "driver": "bridge"
-        }
-    },
-    "volumes": {
-        "postgres_data": {},
-        "redis_data": {}
-    }
-}
-
-with open(PROJECT_ROOT / "docker-compose.simple.yml", 'w', encoding='utf-8') as f:
-    yaml.dump(simple_compose, f, default_flow_style=False, sort_keys=False)
-
-print("✓ Created docker-compose.simple.yml (ONLY 4 SERVICES!)")
-
-# 6. Create updated nginx config
-nginx_conf = """worker_processes auto;
-
-events {
-    worker_connections 1024;
-}
-
-http {
-    upstream unified_backend {
-        server backend:5000;
-    }
-
-    server {
-        listen 80;
-        server_name _;
-
-        # API routes to unified backend
-        location /api/ {
-            proxy_pass http://unified_backend;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_read_timeout 120s;
-        }
-
-        # Health check
-        location /health {
-            proxy_pass http://unified_backend/health;
-        }
-
-        # Root
-        location / {
-            proxy_pass http://unified_backend;
-            proxy_set_header Host $host;
-        }
-    }
-}
-"""
-
-nginx_dir = PROJECT_ROOT / "nginx"
-nginx_dir.mkdir(exist_ok=True)
-(nginx_dir / "nginx.conf").write_text(nginx_conf, encoding='utf-8')
-print("✓ Updated nginx/nginx.conf")
-
-# 7. Create GitHub Actions workflow for auto-deployment
-github_dir = PROJECT_ROOT / ".github" / "workflows"
-github_dir.mkdir(parents=True, exist_ok=True)
-
-github_workflow = """name: Deploy Unified App
-
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
-env:
-  VM_IP: 100.31.44.107
-  VM_USER: ubuntu
-  PROJECT_DIR: unified_app
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -H ${{ env.VM_IP }} >> ~/.ssh/known_hosts
-
-      - name: Sync files to VM
-        run: |
-          rsync -avz --delete \\
-            --exclude='.git' \\
-            --exclude='__pycache__' \\
-            --exclude='*.pyc' \\
-            --exclude='.venv' \\
-            -e "ssh -i ~/.ssh/id_ed25519" \\
-            ./ ${{ env.VM_USER }}@${{ env.VM_IP }}:~/${{ env.PROJECT_DIR }}/
-
-      - name: Deploy on VM
-        run: |
-          ssh -i ~/.ssh/id_ed25519 ${{ env.VM_USER }}@${{ env.VM_IP }} << 'ENDSSH'
-            set -e
-            cd ~/${{ env.PROJECT_DIR }}
-
-            # Stop existing services
-            docker-compose -f docker-compose.simple.yml down || true
-
-            # Build and start
-            docker-compose -f docker-compose.simple.yml build
-            docker-compose -f docker-compose.simple.yml up -d
-
-            # Wait for health check
-            sleep 10
-
-            # Show status
-            docker-compose -f docker-compose.simple.yml ps
-          ENDSSH
-
-      - name: Health Check
-        run: |
-          for i in {1..12}; do
-            if curl -fsS "http://${{ env.VM_IP }}/health" >/dev/null; then
-              echo "Deployment successful!"
-              exit 0
-            fi
-            echo "Waiting for service..."
-            sleep 10
-          done
-          echo "Health check failed"
-          exit 1
-
-      - name: Deployment Complete
-        run: |
-          echo "========================================="
-          echo "DEPLOYMENT SUCCESSFUL"
-          echo "========================================="
-          echo "URL: http://${{ env.VM_IP }}"
-          echo "API: http://${{ env.VM_IP }}/api/services"
-          echo "Health: http://${{ env.VM_IP }}/health"
-"""
-
-(github_dir / "deploy.yml").write_text(github_workflow, encoding='utf-8')
-print("✓ Created .github/workflows/deploy.yml")
-
-# 8. Create local deployment script
-deploy_script = """#!/bin/bash
-# Simple Local Deployment
-
-echo "========================================="
-echo "UNIFIED APP - SIMPLE DEPLOYMENT"
-echo "========================================="
-echo ""
-echo "Services: 4 containers (backend, postgres, redis, nginx)"
-echo "Backend: Dynamically loads all 437 modules"
-echo ""
-
-# Build and start
-docker-compose -f docker-compose.simple.yml down
-docker-compose -f docker-compose.simple.yml build
-docker-compose -f docker-compose.simple.yml up -d
-
-echo ""
-echo "Waiting for services to start..."
-sleep 5
-
-# Show status
-docker-compose -f docker-compose.simple.yml ps
-
-echo ""
-echo "========================================="
-echo "DEPLOYMENT COMPLETE"
-echo "========================================="
-echo "Access: http://localhost"
-echo "API: http://localhost/api/services"
-echo "Health: http://localhost/health"
-echo ""
-echo "View logs: docker-compose -f docker-compose.simple.yml logs -f"
-echo "Stop: docker-compose -f docker-compose.simple.yml down"
-echo "========================================="
-"""
-
-(PROJECT_ROOT / "deploy_simple.sh").write_text(deploy_script, encoding='utf-8')
-print("✓ Created deploy_simple.sh")
-
-# 9. Create README for deployment
-readme = """# Unified App - Simple Deployment
-
-## Architecture
-- **1 Backend Service**: Dynamically loads all 437 modules on-demand
-- **1 PostgreSQL**: Database
-- **1 Redis**: Cache
-- **1 Nginx**: Reverse proxy
-
-Total: **4 containers** instead of 439!
-
-## Local Deployment
-
-```bash
-./deploy_simple.sh
-```
-
-Access: http://localhost
-
-## Cloud Deployment (Automatic)
-
-1. Add secrets to GitHub:
-   - `SSH_PRIVATE_KEY`: Your VM SSH key
-
-2. Push to main branch:
-   ```bash
-   git add .
-   git commit -m "Deploy unified app"
-   git push origin main
-   ```
-
-3. GitHub Actions automatically deploys to http://100.31.44.107
-
-## API Usage
-
-### List all services
-```bash
-curl http://localhost/api/services
-```
-
-### Call a specific module
-```bash
-# GitHub Importer
-curl -X POST http://localhost/api/backend/a-001/api/github/import \\
-  -H "Content-Type: application/json" \\
-  -d '{"url": "https://github.com/user/repo"}'
-
-# Project Detector
-curl -X POST http://localhost/api/backend/a-003/api/detect/project \\
-  -H "Content-Type: application/json" \\
-  -d '{"path": "/path/to/project"}'
-```
-
-## Benefits
-
-- Single backend service - Not 366 separate containers
-- Dynamic loading - Modules loaded on-demand
-- Low memory - ~2-4GB RAM instead of 60GB+
-- Fast deployment - Seconds instead of hours
-- Auto-deploy - Push to GitHub -> Automatically deployed
-- Easy to scale - Just increase Gunicorn workers
-
-## Monitoring
-
-```bash
-# View logs
-docker-compose -f docker-compose.simple.yml logs -f backend
-
-# Check health
-curl http://localhost/health
-
-# Restart
-docker-compose -f docker-compose.simple.yml restart backend
-```
-"""
-
-(PROJECT_ROOT / "DEPLOYMENT_README.md").write_text(readme, encoding='utf-8')
-print("✓ Created DEPLOYMENT_README.md")
-
-print()
-print("=" * 80)
-print("✓ SIMPLE DEPLOYMENT SETUP COMPLETE")
-print("=" * 80)
-print()
-print("What was created:")
-print("  1. unified_backend/ - Single backend service")
-print("  2. docker-compose.simple.yml - ONLY 4 services!")
-print("  3. .github/workflows/deploy.yml - Auto-deployment")
-print("  4. deploy_simple.sh - Local deployment script")
-print("  5. DEPLOYMENT_README.md - Instructions")
-print()
-print("=" * 80)
-print("NEXT STEPS")
-print("=" * 80)
-print()
-print("1. Copy unified backend app.py:")
-print("   - Get code from 'unified_backend_service' artifact above")
-print("   - Save to: unified_backend/app.py")
-print()
-print("2. Test locally:")
-print("   chmod +x deploy_simple.sh")
-print("   ./deploy_simple.sh")
-print()
-print("3. Deploy to cloud:")
-print("   git add .")
-print("   git commit -m 'Setup unified deployment'")
-print("   git push origin main")
-print()
-print("4. Access:")
-print("   http://100.31.44.107")
-print("=" * 80)
+from dotenv import load_dotenv
+
+load_dotenv()
+
+PROJECT_ROOT = Path(__file__).parent
+DASHBOARD_PATH = PROJECT_ROOT / "unified_backend" / "dashboard.html"
+
+client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+
+
+def generate_jarvis_dashboard():
+    """Use Claude to generate a JARVIS-style interconnected dashboard"""
+
+    print("=" * 80)
+    print("🤖 JARVIS-STYLE DASHBOARD GENERATOR")
+    print("=" * 80)
+    print()
+    print("Creating Iron Man inspired interface with:")
+    print("  ⚡ Auto-executing background services")
+    print("  🔗 Interconnected features")
+    print("  🎨 Orange/red Stark Industries theme")
+    print("  🤖 Smart execution (knows what needs input vs auto-run)")
+    print()
+
+    system_prompt = """You are an expert UI/UX designer specializing in futuristic, AI-powered interfaces inspired by Iron Man's JARVIS system.
+
+Create a complete, production-ready HTML dashboard with these CRITICAL requirements:
+
+1. **DESIGN THEME - Iron Man / JARVIS Style:**
+   - Orange (#ff6b35, #f77f00), red (#dc2f02), gold (#ffba08) primary colors
+   - Dark background (#1a1a1a, #0d0d0d, #1f1f1f)
+   - Glowing effects, subtle animations
+   - Holographic-style panels with transparent backgrounds
+   - Hexagonal or angular UI elements
+   - Pulse animations on active elements
+
+2. **BACKEND CONNECTIVITY:**
+   - All services connect to: http://100.31.44.107/api/{category}/{module-id}/{endpoint}
+   - Health endpoint: http://100.31.44.107/health
+   - Services list: http://100.31.44.107/api/services
+   - Show real-time connection status
+   - Auto-reconnect on failure
+
+3. **AUTO-EXECUTION vs MANUAL INPUT:**
+   SMART CLASSIFICATION:
+
+   **AUTO-EXECUTE (Background services - no user input needed):**
+   - Monitoring services (health checks, metrics, logs)
+   - Detectors (code analysis, security scans, pattern detection)
+   - Watchers (file sync, repo watching, change detection)
+   - Analyzers (performance, test coverage, dependencies)
+   - Validators (code quality, security checks)
+   - Reporters (dashboards, status reports)
+
+   **MANUAL INPUT (User provides data):**
+   - Importers (GitHub import, project upload)
+   - Generators (code generation, scaffolding)
+   - Uploaders (file uploads)
+   - Configurators (settings, preferences)
+   - Executors (run specific tasks, commands)
+
+4. **INTERCONNECTIVITY:**
+   - Services can trigger other services
+   - Show data flow between services
+   - Visual connections when one service uses another
+   - Shared state management
+   - Event bus for service communication
+
+5. **LAYOUT:**
+   - Left sidebar: Service categories with counts
+   - Top: Real-time status bar (health, active services, metrics)
+   - Main: Grid of service cards (auto-executing ones pulse/glow)
+   - Right: Activity feed showing what's running
+   - Bottom: Command palette (JARVIS-style commands)
+
+6. **INTERACTIVE FEATURES:**
+   - Click service → Expand with options
+   - Auto-executing services show live status
+   - Manual services show input forms
+   - Real-time logs/output
+   - Service-to-service connections visualized
+
+7. **TECHNICAL REQUIREMENTS:**
+   - Pure HTML/CSS/JavaScript (no external dependencies)
+   - Responsive design
+   - WebSocket or polling for real-time updates
+   - Error handling with retry logic
+   - Loading states with animations
+
+Return ONLY complete, production-ready HTML. No explanations, no markdown, just the full HTML file."""
+
+    user_prompt = f"""Create a JARVIS-style dashboard for this Assembly Line platform with 435 services:
+
+CATEGORIES:
+- Backend (365 modules): Code analysis, project management, monitoring
+- Frontend (20 modules): UI components, testing
+- Infrastructure (50 modules): Deployment, monitoring, alerts
+
+KEY SERVICES TO HIGHLIGHT:
+1. GitHub Project Import (manual - needs URL)
+2. Project Uploader (manual - needs file)
+3. Project Type Auto-Detector (AUTO - runs on import)
+4. Code Health Dashboard (AUTO - continuous monitoring)
+5. Feature Surface Detection (AUTO - analyzes imported projects)
+6. Test Coverage Analysis (AUTO - runs after import)
+7. Dependency Upgrade Advisor (AUTO - background checks)
+
+INTERACTION EXAMPLE:
+When user imports GitHub project:
+1. GitHub Import (manual input)
+2. → Triggers Project Detector (auto)
+3. → Triggers Code Health Analysis (auto)
+4. → Triggers Feature Detection (auto)
+5. → Shows results in interconnected dashboard
+
+Make it look like Tony Stark is controlling his workshop! 
+
+The dashboard should:
+- Automatically start monitoring services on load
+- Show pulsing orange glow on active services
+- Display service connections with animated lines
+- Have a command bar at bottom for JARVIS-style commands
+- Show "JARVIS: Ready" when all systems initialized
+
+Make it EPIC! 🚀"""
+
+    print("Generating dashboard with Claude...")
+    print("-" * 80)
+
+    try:
+        message = client.messages.create(
+            model="claude-sonnet-4-20250514",  # Use Sonnet for best quality
+            max_tokens=16000,  # Large for complete HTML
+            system=system_prompt,
+            messages=[
+                {"role": "user", "content": user_prompt}
+            ]
+        )
+
+        html_content = message.content[0].text.strip()
+
+        # Clean up if wrapped in markdown
+        if "```html" in html_content:
+            html_content = html_content.split("```html")[1].split("```")[0].strip()
+        elif "```" in html_content:
+            html_content = html_content.split("```")[1].split("```")[0].strip()
+
+        # Save dashboard
+        DASHBOARD_PATH.parent.mkdir(exist_ok=True)
+        DASHBOARD_PATH.write_text(html_content, encoding='utf-8')
+
+        print()
+        print("✓ Dashboard generated successfully!")
+        print(f"✓ Saved to: {DASHBOARD_PATH}")
+        print()
+
+        # Show preview stats
+        lines = html_content.count('\n')
+        size_kb = len(html_content) / 1024
+
+        print(f"Dashboard stats:")
+        print(f"  Lines: {lines:,}")
+        print(f"  Size: {size_kb:.1f} KB")
+        print()
+
+        return True
+
+    except Exception as e:
+        print(f"✗ Error generating dashboard: {e}")
+        return False
+
+
+def update_backend_app():
+    """Ensure backend app.py serves the dashboard correctly"""
+
+    app_py_path = PROJECT_ROOT / "unified_backend" / "app.py"
+
+    # Check if the route is already correct
+    if app_py_path.exists():
+        content = app_py_path.read_text(encoding='utf-8')
+        if "dashboard.html" in content and "Path(__file__).parent" in content:
+            print("✓ Backend app.py already configured correctly")
+            return True
+
+    print("⚠ Backend app.py needs manual update")
+    print("  Add this to unified_backend/app.py:")
+    print("""
+@app.route('/')
+def index():
+    dashboard_path = Path(__file__).parent / 'dashboard.html'
+    if dashboard_path.exists():
+        with open(dashboard_path, 'r', encoding='utf-8') as f:
+            return f.read()
+    return jsonify({"error": "Dashboard not found"})
+""")
+    return False
+
+
+def main():
+    print("=" * 80)
+    print("🤖 JARVIS DASHBOARD - Iron Man Style Interface")
+    print("=" * 80)
+    print()
+
+    # Check API key
+    if not os.environ.get("ANTHROPIC_API_KEY"):
+        print("❌ ANTHROPIC_API_KEY not found in .env file")
+        return
+
+    print("✓ Claude API key found")
+    print()
+
+    # Generate dashboard
+    success = generate_jarvis_dashboard()
+
+    if success:
+        # Check backend configuration
+        update_backend_app()
+
+        print()
+        print("=" * 80)
+        print("✓ JARVIS DASHBOARD READY")
+        print("=" * 80)
+        print()
+        print("Next steps:")
+        print()
+        print("1. Deploy to server:")
+        print("   cd D:/Assemblyline/unified_app")
+        print("   git add unified_backend/dashboard.html")
+        print("   git commit -m 'Add JARVIS-style dashboard'")
+        print("   git push origin main")
+        print()
+        print("2. After deployment, visit:")
+        print("   http://100.31.44.107")
+        print()
+        print("3. Features:")
+        print("   ⚡ Auto-executing services start immediately")
+        print("   🔗 Interconnected service visualization")
+        print("   🎨 Iron Man orange/red theme")
+        print("   🤖 JARVIS-style command interface")
+        print()
+        print("=" * 80)
+        print()
+        print("🦾 JARVIS: Dashboard ready. All systems online.")
+        print("=" * 80)
+
+
+if __name__ == "__main__":
+    main()
